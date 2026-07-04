@@ -14,12 +14,6 @@ export default function Home() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <header className="mx-auto flex h-16 w-full max-w-4xl items-center justify-between px-6">
-        <span className="text-sm font-semibold tracking-tight text-zinc-900">
-          rubik<span className="font-normal text-zinc-400">.osada.vc</span>
-        </span>
-      </header>
-
       <main className="mx-auto w-full max-w-4xl flex-1 px-6 pb-24">
         <section className="pb-14 pt-16 sm:pt-24">
           <h1 className="max-w-xl text-4xl font-semibold tracking-tight text-zinc-900 sm:text-5xl">

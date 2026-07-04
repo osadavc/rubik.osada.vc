@@ -48,11 +48,25 @@ describe("guide data integrity", () => {
     expect(new Set(ids).size).toBe(ids.length);
   });
 
-  test("every setup, demo and solution parses", () => {
+  test("every setup, demo and drill parses", () => {
     for (const step of steps) {
-      for (const alg of [step.setup, step.demo, step.solution]) {
+      for (const alg of [step.setup, step.demo]) {
         if (alg) expect(() => parseAlg(alg)).not.toThrow();
       }
+      for (const drill of step.drills ?? []) {
+        expect(() => parseAlg(drill.setup)).not.toThrow();
+        const solution = drill.solution;
+        if (solution) expect(() => parseAlg(solution)).not.toThrow();
+      }
+    }
+  });
+
+  test("demo notes and tokens align with the demo moves", () => {
+    for (const step of steps) {
+      if (!step.demo) continue;
+      const moveCount = parseAlg(step.demo).length;
+      if (step.demoTokens) expect(step.demoTokens.length).toBe(moveCount);
+      if (step.demoNotes) expect(step.demoNotes.length).toBe(moveCount);
     }
   });
 
@@ -66,14 +80,38 @@ describe("guide data integrity", () => {
     }
   });
 
-  test("practice goals start unsatisfied and their solutions satisfy them", () => {
+  test("every drill starts unsatisfied and its solution satisfies the goal", () => {
     for (const step of steps) {
       if (step.interaction !== "execute" || !step.goal) continue;
-      const start = stateAfter(step.setup ?? "");
-      expect(step.goal(start)).toBe(false);
-      if (step.solution) {
-        expect(step.goal(applyAlg(start, step.solution))).toBe(true);
+      expect(step.drills?.length ?? 0).toBeGreaterThan(0);
+      for (const drill of step.drills!) {
+        const start = stateAfter(drill.setup);
+        expect(step.goal(start)).toBe(false);
+        if (drill.solution) {
+          expect(step.goal(applyAlg(start, drill.solution))).toBe(true);
+        }
       }
+    }
+  });
+
+  test("drill labels are unique within a step", () => {
+    for (const step of steps) {
+      const labels = (step.drills ?? []).map((d) => d.label);
+      expect(new Set(labels).size).toBe(labels.length);
+    }
+  });
+
+  test("spotlights select at least one piece of their setup state", () => {
+    for (const step of steps) {
+      if (!step.spotlight) continue;
+      const stickers = getStickers(stateAfter(step.setup ?? ""));
+      expect(stickers.some((s) => step.spotlight!(s))).toBe(true);
+    }
+  });
+
+  test("chapter outcomes parse", () => {
+    for (const chapter of beginnersMethod.chapters) {
+      if (chapter.outcome) expect(() => parseAlg(chapter.outcome!.setup)).not.toThrow();
     }
   });
 });

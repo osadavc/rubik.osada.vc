@@ -45,6 +45,17 @@ type DragGesture = {
   consumed: boolean;
 };
 
+/** One turning layer briefly lighting up, so the eye catches what moved. */
+type LayerFlash = {
+  cubieIds: Set<number>;
+  startedAt: number;
+  duration: number;
+};
+
+const FLASH_TAIL_MS = 340;
+const CELEBRATE_MS = 1400;
+const WHITE = new THREE.Color("#fffdf4");
+
 type CubeModelProps = {
   interactive: boolean;
   setControlsEnabled: (enabled: boolean) => void;
@@ -55,6 +66,10 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
   const groups = useRef(new Map<number, THREE.Group>());
   const materials = useRef(new Map<string, THREE.MeshStandardMaterial>());
   const targetColors = useRef(new Map<string, THREE.Color>());
+  const spotKeys = useRef(new Set<string>());
+  const cubieOfKey = useRef(new Map<string, number>());
+  const flashes = useRef<LayerFlash[]>([]);
+  const seenAnimStart = useRef<number>(-1);
   const gesture = useRef<DragGesture | null>(null);
   const { camera, gl, size } = useThree();
 
@@ -73,24 +88,36 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
     return specs;
   }, [initial]);
 
-  // Recompute target sticker colors whenever the logical state or mask changes.
+  // Recompute target sticker colors and spotlight membership whenever the
+  // logical state, mask, or spotlight changes.
   useEffect(() => {
     const update = () => {
-      const { state, highlight } = useCubeStore.getState();
-      const next = new Map<string, THREE.Color>();
+      const { state, highlight, spotlight } = useCubeStore.getState();
+      const nextColors = new Map<string, THREE.Color>();
+      const nextSpots = new Set<string>();
+      const nextCubies = new Map<string, number>();
       for (const sticker of getStickers(state)) {
         const key = `${sticker.cubieId}:${sticker.homeFace}`;
         const lit = highlight ? highlight(sticker) : true;
-        next.set(
+        nextColors.set(
           key,
           new THREE.Color(lit ? STICKER_COLORS[sticker.color] : DIM_STICKER_COLOR),
         );
+        nextCubies.set(key, sticker.cubieId);
+        if (spotlight?.(sticker)) nextSpots.add(key);
       }
-      targetColors.current = next;
+      targetColors.current = nextColors;
+      spotKeys.current = nextSpots;
+      cubieOfKey.current = nextCubies;
     };
     update();
     return useCubeStore.subscribe((cur, prev) => {
-      if (cur.state !== prev.state || cur.highlight !== prev.highlight) update();
+      if (
+        cur.state !== prev.state ||
+        cur.highlight !== prev.highlight ||
+        cur.spotlight !== prev.spotlight
+      )
+        update();
     });
   }, []);
 
@@ -98,14 +125,34 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
     const store = useCubeStore.getState();
     if (!store.anim && store.queue.length > 0) store.startNextAnim();
 
+    const now = performance.now();
     const anim = useCubeStore.getState().anim;
+
+    // Register a layer flash the first frame a new animation appears.
+    if (
+      anim &&
+      anim.startedAt !== seenAnimStart.current &&
+      anim.move.layer !== null &&
+      anim.source !== "system" &&
+      !store.reducedMotion
+    ) {
+      seenAnimStart.current = anim.startedAt;
+      const ids = new Set<number>();
+      for (const cubie of store.state) {
+        if (cubiePosition(cubie)[anim.move.axis] === anim.move.layer) ids.add(cubie.id);
+      }
+      flashes.current.push({
+        cubieIds: ids,
+        startedAt: anim.startedAt,
+        duration: anim.duration + FLASH_TAIL_MS,
+      });
+    }
+    flashes.current = flashes.current.filter((f) => now - f.startedAt < f.duration);
+
     let animQuat: THREE.Quaternion | null = null;
     let animMove: Move | null = null;
     if (anim) {
-      const progress = Math.min(
-        (performance.now() - anim.startedAt) / anim.duration,
-        1,
-      );
+      const progress = Math.min((now - anim.startedAt) / anim.duration, 1);
       const angle = anim.move.q * (Math.PI / 2) * easeOutCubic(progress);
       animQuat = new THREE.Quaternion().setFromAxisAngle(
         AXIS_VECTORS[anim.move.axis],
@@ -142,11 +189,64 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
       group.position.copy(vec);
     }
 
-    // Smooth sticker color transitions.
+    // Per-cubie flash strength: rises instantly with the turn, fades on a tail.
+    const flashStrength = new Map<number, number>();
+    for (const flash of flashes.current) {
+      const t = (now - flash.startedAt) / flash.duration;
+      const strength = 0.16 * Math.sin(Math.min(t, 1) * Math.PI);
+      for (const id of flash.cubieIds) {
+        flashStrength.set(id, Math.max(flashStrength.get(id) ?? 0, strength));
+      }
+    }
+
+    // Spotlight pulse: slow breathing glow, steady under reduced motion.
+    const pulse = store.reducedMotion
+      ? 0.3
+      : 0.3 + 0.16 * Math.sin((now / 1000) * Math.PI);
+
+    const celebrating =
+      store.celebrateAt !== null && now - store.celebrateAt < CELEBRATE_MS;
+    const celebrateT = celebrating ? (now - store.celebrateAt!) / CELEBRATE_MS : 0;
+
+    // Smooth sticker color transitions plus emissive glow layers.
     const k = Math.min(delta * 10, 1);
     for (const [key, material] of materials.current) {
       const target = targetColors.current.get(key);
       if (target) material.color.lerp(target, k);
+
+      let glow = 0;
+      const glowColor = material.emissive;
+      glowColor.setRGB(0, 0, 0);
+
+      if (spotKeys.current.has(key) && target) {
+        glowColor.copy(target).multiplyScalar(pulse);
+        glow = 1;
+      }
+      const cubieId = cubieOfKey.current.get(key);
+      const flash = cubieId !== undefined ? (flashStrength.get(cubieId) ?? 0) : 0;
+      if (flash > 0) {
+        glowColor.r += WHITE.r * flash;
+        glowColor.g += WHITE.g * flash;
+        glowColor.b += WHITE.b * flash;
+        glow = 1;
+      }
+      if (celebrating && cubieId !== undefined) {
+        const group = groups.current.get(cubieId);
+        if (group && target) {
+          // A diagonal wave sweeps the cube corner to corner.
+          const along = (group.position.x + group.position.y + group.position.z) / 3;
+          const front = -1.4 + celebrateT * 2.8;
+          const d = Math.abs(along - front);
+          const wave = Math.max(0, 1 - d / 0.55) * 0.55 * Math.sin(celebrateT * Math.PI);
+          if (wave > 0.01) {
+            glowColor.r += target.r * wave + WHITE.r * wave * 0.4;
+            glowColor.g += target.g * wave + WHITE.g * wave * 0.4;
+            glowColor.b += target.b * wave + WHITE.b * wave * 0.4;
+            glow = 1;
+          }
+        }
+      }
+      material.emissiveIntensity = glow;
     }
   });
 

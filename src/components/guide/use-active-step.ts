@@ -14,7 +14,9 @@ export const useActiveStep = (stepIds: readonly string[]) => {
   const [activeId, setActiveId] = useState<string | null>(stepIds[0] ?? null);
   const elements = useRef(new Map<string, HTMLElement>());
   const stepIdsRef = useRef(stepIds);
-  stepIdsRef.current = stepIds;
+  useEffect(() => {
+    stepIdsRef.current = stepIds;
+  }, [stepIds]);
 
   const pickActive = useCallback(() => {
     const ids = stepIdsRef.current;

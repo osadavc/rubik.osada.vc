@@ -1,4 +1,4 @@
-import { AlgChip, Swatch, Tip } from "@/components/guide/content-blocks";
+import { M, ScrambleChip, Swatch, Tip } from "@/components/guide/content-blocks";
 import { TopView } from "@/components/guide/top-view";
 import {
   firstLayerSolved,
@@ -7,6 +7,7 @@ import {
   hasYellowCross,
   isSolved,
   middleLayerSolved,
+  yellowCornersPositioned,
   yellowFaceComplete,
 } from "@/lib/cube";
 import type { Guide } from "../types";
@@ -16,11 +17,14 @@ import {
   CORNER_PLL,
   CORNER_RIGHT,
   DAISY_FLIP,
+  DAISY_SETUP,
   DEMOS,
   EDGE_PLL,
   EDGE_PLL_PRIME,
   INSERT_LEFT,
   INSERT_RIGHT,
+  INV_INSERT_LEFT,
+  INV_INSERT_RIGHT,
   SETUPS,
   SUNE,
   YELLOW_CROSS,
@@ -28,11 +32,18 @@ import {
 import {
   centersOnly,
   cornersOnly,
+  cyclingYellowEdges,
   edgesOnly,
   layerOneFocus,
   noYellowFocus,
+  piece,
+  pieces,
   topLayer,
+  whiteEdges,
   whiteEdgesFocus,
+  whiteEdgesOnTop,
+  yellowCorners,
+  yellowEdges,
   yellowEdgesFocus,
 } from "./masks";
 
@@ -40,11 +51,11 @@ const DEFAULT_CAM = { azimuth: 0.68, polar: 1.08 };
 const LOW_CAM = { azimuth: 0.68, polar: 1.5 };
 
 const FACE_KEY = [
-  ["U", "up, the top face"],
-  ["D", "down, the bottom face"],
+  ["U", "up — the top"],
+  ["D", "down — the bottom"],
   ["L", "left"],
   ["R", "right"],
-  ["F", "front, facing you"],
+  ["F", "front — faces you"],
   ["B", "back"],
 ] as const;
 
@@ -71,13 +82,13 @@ export const beginnersMethod: Guide = {
           content: (
             <>
               <p>
-                A 3x3 cube has three horizontal layers: top, middle, and bottom.
-                The whole method comes down to one idea. You solve the cube{" "}
-                <strong>layer by layer</strong>, not color by color.
+                A 3&times;3 cube has three horizontal layers: top, middle, and
+                bottom. The whole method comes down to one idea. You solve the
+                cube <strong>layer by layer</strong>, not color by color.
               </p>
               <p>
-                The highlighted band on the cube is the top layer. Try dragging
-                it around, and grab empty space to orbit the whole cube.
+                The lit band on the cube is the top layer. Try dragging it
+                around, and grab empty space to orbit the whole cube.
               </p>
               <Tip>
                 <p>
@@ -93,23 +104,33 @@ export const beginnersMethod: Guide = {
           title: "Centers never move",
           camera: DEFAULT_CAM,
           highlight: centersOnly,
+          spotlight: centersOnly,
           demo: "R L' U D' F B'",
+          demoNotes: [
+            "Watch the six glowing center tiles: everything spins around them, but they never trade places.",
+            null,
+            null,
+            null,
+            null,
+            null,
+          ],
           pace: 0.6,
           content: (
             <>
               <p>
                 Each flat side is a face, and the single tile in the middle of a
-                face is a <strong>center</strong>. Centers are fixed to the core,
-                so they never move relative to each other. Watch the demo: every
-                layer spins, yet the six centers stay put.
+                face is a <strong>center</strong>. Centers are fixed to the
+                core, so they never move relative to each other. Play the demo
+                below: every layer spins, yet the six centers stay put.
               </p>
               <p>
-                That means the center tells you what color its face will be when
-                solved. The pairs are always opposite each other:{" "}
-                <Swatch color="white" /> white opposite <Swatch color="yellow" />{" "}
-                yellow, <Swatch color="blue" /> blue opposite{" "}
-                <Swatch color="green" /> green, and <Swatch color="orange" />{" "}
-                orange opposite <Swatch color="red" /> red.
+                That means the center tells you what color its face will be
+                when solved. The pairs are always opposite each other:{" "}
+                <Swatch color="white" /> white opposite{" "}
+                <Swatch color="yellow" /> yellow, <Swatch color="blue" /> blue
+                opposite <Swatch color="green" /> green, and{" "}
+                <Swatch color="orange" /> orange opposite{" "}
+                <Swatch color="red" /> red.
               </p>
             </>
           ),
@@ -123,8 +144,8 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 An <strong>edge</strong> piece sits between two centers and has
-                exactly two colored tiles. There are twelve of them, highlighted
-                on the cube now. On a real cube you would pinch an edge with two
+                exactly two colored tiles. There are twelve of them, lit on the
+                cube now. On a real cube you would pinch an edge with two
                 fingers.
               </p>
             </>
@@ -139,9 +160,9 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 A <strong>corner</strong> piece has three colored tiles, and
-                there are eight of them. Every piece on the cube is a center, an
-                edge, or a corner. A piece can never change type, and its colors
-                never separate. That is why the cube is solvable at all.
+                there are eight of them. Every piece on the cube is a center,
+                an edge, or a corner. A piece can never change type, and its
+                colors never separate. That is why the cube is solvable at all.
               </p>
             </>
           ),
@@ -159,28 +180,39 @@ export const beginnersMethod: Guide = {
           title: "One letter, one quarter turn",
           camera: DEFAULT_CAM,
           demo: "U",
+          demoNotes: [
+            "The top face, one quarter turn clockwise — clockwise as if you were looking straight down at it.",
+          ],
           pace: 0.5,
           content: (
             <>
               <p>
-                Each face has a letter. A letter on its own means: turn that face
-                a quarter turn <strong>clockwise, as if you were looking at that
-                face straight on</strong>.
+                Each face has a letter. A letter on its own means: turn that
+                face a quarter turn{" "}
+                <strong>
+                  clockwise, as if you were looking at that face straight on
+                </strong>
+                .
               </p>
-              <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {FACE_KEY.map(([letter, meaning]) => (
-                  <p key={letter} className="flex items-baseline gap-2.5">
-                    <span className="rounded-md bg-zinc-100 px-1.5 py-0.5 font-mono text-sm text-zinc-700">
+                  <div
+                    key={letter}
+                    className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-3 py-2.5"
+                  >
+                    <span className="font-mono text-2xl font-semibold text-zinc-900">
                       {letter}
                     </span>
-                    <span className="text-sm">{meaning}</span>
-                  </p>
+                    <span className="text-xs leading-tight text-zinc-500">
+                      {meaning}
+                    </span>
+                  </div>
                 ))}
               </div>
               <p>
-                The demo plays <span className="font-mono">U</span>, one
-                clockwise turn of the up face. Step through it with the player
-                controls, forwards and backwards.
+                The demo below plays <M>U</M>, one clockwise turn of the up
+                face. Notice how the turning layer flashes on the cube — every
+                move you meet from here on will announce itself the same way.
               </p>
             </>
           ),
@@ -190,25 +222,26 @@ export const beginnersMethod: Guide = {
           title: "Primes and doubles",
           camera: DEFAULT_CAM,
           demo: "U U' U2",
+          demoNotes: [
+            "A plain letter: quarter turn clockwise.",
+            "An apostrophe — read \u201cU prime\u201d — reverses it: quarter turn counterclockwise.",
+            "A 2 means turn the face twice. Direction doesn't matter for a half turn.",
+          ],
           pace: 0.55,
           content: (
             <>
               <p>
-                An apostrophe means <strong>counterclockwise</strong>.{" "}
-                <span className="font-mono">U&apos;</span> is spoken &ldquo;U
-                prime&rdquo; and undoes a <span className="font-mono">U</span>. A{" "}
-                <span className="font-mono">2</span> means turn the face twice.
-              </p>
-              <p>
-                The demo plays <span className="font-mono">U</span>, then{" "}
-                <span className="font-mono">U&apos;</span>, then{" "}
-                <span className="font-mono">U2</span>. Watch how the first two
-                cancel out.
+                Two marks change a letter&apos;s meaning. An apostrophe like{" "}
+                <M>{"U'"}</M> means <strong>counterclockwise</strong>, and is
+                spoken &ldquo;U prime&rdquo;. A <M>U2</M> means turn the face
+                twice. Every move card in this guide carries a small arrow so
+                you always know the direction at a glance.
               </p>
               <p>
                 A sequence of moves in a specific order is called an{" "}
                 <strong>algorithm</strong>. You will learn only a handful of
-                short ones.
+                short ones, and each will be laid out move by move, like the
+                one below.
               </p>
             </>
           ),
@@ -219,14 +252,20 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           interaction: "execute",
           goal: (state) => !isSolved(state),
-          goalText: "turn any face of the cube.",
-          hint: "Press on any colored tile, then drag across it in the direction you want that layer to spin.",
+          goalText: "Turn any face of the cube, just to feel the grip.",
+          drills: [
+            {
+              setup: "",
+              label: "Any turn",
+              hint: "Press on any colored tile, then drag across it in the direction you want that layer to spin.",
+            },
+          ],
           content: (
             <>
               <p>
-                One rule matters when following an algorithm: the face you start
-                with as the front <strong>stays the front</strong> for the whole
-                sequence. Do not re-grip halfway through.
+                One rule matters when following an algorithm: the face you
+                start with as the front <strong>stays the front</strong> for
+                the whole sequence. Do not re-grip halfway through.
               </p>
               <p>
                 Occasionally the method asks you to rotate the entire cube
@@ -243,6 +282,7 @@ export const beginnersMethod: Guide = {
       title: "The daisy",
       summary:
         "Stage one of layer one. Four white petals around the yellow center, an easy landmark to build from.",
+      outcome: { setup: DAISY_SETUP, caption: "The daisy" },
       steps: [
         {
           id: "daisy-hold",
@@ -253,14 +293,14 @@ export const beginnersMethod: Guide = {
           content: (
             <>
               <p>
-                Begin with the <Swatch color="yellow" /> yellow center on the up
-                face. It feels backwards to start the white layer by looking at
-                yellow, but the daisy makes the next stage almost automatic.
+                Begin with the <Swatch color="yellow" /> yellow center on the
+                up face. It feels backwards to start the white layer by looking
+                at yellow, but the daisy makes the next stage almost automatic.
               </p>
               <p>
                 From here on, tiles that do not matter yet are dimmed, exactly
                 like the gray tiles in the printed guide. Focus only on what is
-                lit: the four white edges.
+                lit — right now, the four white edges.
               </p>
             </>
           ),
@@ -271,12 +311,14 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.daisy,
           highlight: whiteEdgesFocus,
+          spotlight: whiteEdges,
           content: (
             <>
               <p>
-                This is a finished daisy: four white edge tiles around the yellow
-                center, like petals. The petals&apos; side colors do not need to
-                match anything yet. Any white edge tile pointing up counts.
+                This is a finished daisy: four white edge tiles around the
+                yellow center, like petals — they are glowing on the cube. The
+                petals&apos; side colors do not need to match anything yet. Any
+                white edge tile pointing up counts.
               </p>
             </>
           ),
@@ -287,12 +329,13 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: "x2 F2 B2",
           highlight: whiteEdgesFocus,
+          spotlight: whiteEdgesOnTop,
           content: (
             <>
               <p>
-                Look at the top layer first. Any edge that already shows white on
-                top is a finished petal. Leave those alone and count how many you
-                still need. Here, two are done and two are missing.
+                Look at the top layer first. Any edge that already shows white
+                on top is a finished petal — the two glowing ones here. Leave
+                those alone and count how many you still need.
               </p>
             </>
           ),
@@ -303,15 +346,18 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.daisyMiddleCase,
           highlight: whiteEdgesFocus,
+          spotlight: piece("white", "blue"),
           demo: "F'",
+          demoNotes: [
+            "One turn of the front face lifts the glowing white edge from the middle layer into the top.",
+          ],
           content: (
             <>
               <p>
                 Next, scan the middle layer. This cube has a white edge tile on
-                the right side of the front face. Turn that face so the white
-                edge rises into the top layer.
+                the side of the front face — it is glowing. Turn that face so
+                the white edge rises into the top layer. Watch it travel.
               </p>
-              <AlgChip alg="F'" label="Bring the edge up" />
             </>
           ),
         },
@@ -321,20 +367,26 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.daisyBumpCase,
           highlight: whiteEdgesFocus,
+          spotlight: pieces(["white", "blue"], ["orange", "white"]),
           demo: "U F2",
+          demoNotes: [
+            "First, spin the top: the finished petal slides out of the landing slot.",
+            "Now the white edge comes up into the empty slot — nothing gets knocked out.",
+          ],
           content: (
             <>
               <p>
-                Careful: if the landing slot on top already holds a petal, a turn
-                would knock it right back out.
+                Careful: if the landing slot on top already holds a petal, a
+                turn would knock it right back out. Both pieces involved are
+                glowing on the cube — the petal in danger and the edge that
+                wants its spot.
               </p>
               <Tip>
                 <p>
-                  Rotate the up face first to move the finished petal out of the
-                  way, then bring the new white edge up.
+                  Rotate the up face first to move the finished petal out of
+                  the way, then bring the new white edge up.
                 </p>
               </Tip>
-              <AlgChip alg="U F2" label="Clear the slot, then insert" />
             </>
           ),
         },
@@ -344,15 +396,18 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.daisyBottomCase,
           highlight: whiteEdgesFocus,
+          spotlight: piece("white", "blue"),
           demo: "F2",
+          demoNotes: [
+            "A half turn carries the white edge from the bottom straight to the top, landing white side up.",
+          ],
           content: (
             <>
               <p>
                 Finally, the bottom layer. A white edge tile facing down is two
-                quarter turns from home: turn its face twice and it lands on top
-                with white showing up.
+                quarter turns from home: turn its face twice and it lands on
+                top with white showing up.
               </p>
-              <AlgChip alg="F2" label="Straight to the top" />
             </>
           ),
         },
@@ -362,19 +417,20 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.daisyFlipCase,
           highlight: whiteEdgesFocus,
+          spotlight: piece("white", "blue"),
           demo: DAISY_FLIP,
+          demoNotes: [
+            "The flipped edge drops out of the top layer, down into the middle.",
+            "The top spins so an empty slot waits above the edge.",
+            "The edge rises back up — this time with white facing up.",
+          ],
           content: (
             <>
               <p>
                 Sometimes an edge reaches the top layer with its white tile
-                facing sideways instead of up. Hold the cube so the flipped edge
-                is on the <strong>right face</strong>, then run your first real
-                algorithm.
-              </p>
-              <AlgChip alg={DAISY_FLIP} label="Flip the edge" />
-              <p>
-                Three moves: the edge drops out, turns over, and comes back with
-                white on top.
+                facing sideways instead of up. Hold the cube so the flipped
+                edge is on the <strong>right face</strong>, then run your first
+                real algorithm. Three moves: out, over, back in.
               </p>
             </>
           ),
@@ -387,14 +443,32 @@ export const beginnersMethod: Guide = {
           highlight: whiteEdgesFocus,
           interaction: "execute",
           goal: hasDaisy,
-          goalText: "get all four white petals around the yellow center.",
-          hint: "The last white edge sits at the bottom, but its landing slot is off to the side. Spin the top face first so the empty slot moves over it, then turn twice.",
-          solution: DEMOS.daisyPracticeSolution,
+          goalText: "Get all four white petals around the yellow center.",
+          drills: [
+            {
+              setup: SETUPS.daisyPractice,
+              label: "One to go",
+              hint: "The last white edge sits at the bottom, but its landing slot is off to the side. Spin the top face first so the empty slot moves over it, then turn twice.",
+              solution: DEMOS.daisyPracticeSolution,
+            },
+            {
+              setup: SETUPS.daisyFlipCase,
+              label: "Flipped petal",
+              hint: "One edge reached the top with white facing sideways, on the right face. Run the flip: R\u2032 U F\u2032.",
+              solution: DAISY_FLIP,
+            },
+            {
+              setup: "x2 R2 B2 U'",
+              label: "Two missing",
+              hint: "Two whites wait on the bottom. Spin the top so an empty slot sits over one, send it up with a double turn, then do the same for the other.",
+              solution: "U F2 L2",
+            },
+          ],
           content: (
             <>
               <p>
-                Three petals are in. One white edge is still on the bottom layer.
-                Finish the daisy yourself.
+                Time to do it yourself. Three scrambles, from easy to sneaky.
+                The cube is yours — drag faces to turn them.
               </p>
             </>
           ),
@@ -406,6 +480,7 @@ export const beginnersMethod: Guide = {
       title: "The white cross",
       summary:
         "Turn the daisy into a proper cross by matching each petal's side color, then sending it down.",
+      outcome: { setup: SETUPS.crossDone, caption: "White cross" },
       steps: [
         {
           id: "cross-match",
@@ -413,16 +488,19 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.crossMismatch,
           highlight: whiteEdgesFocus,
+          spotlight: piece("white", "blue"),
           demo: "U'",
+          demoNotes: [
+            "The top turns until the glowing petal's side color lines up directly above the center of the same color.",
+          ],
           content: (
             <>
               <p>
-                Keep the daisy on top. Look at the <strong>front tile</strong> of
-                the petal nearest you: it has some color besides white. Turn the
-                up face until that tile sits directly above the center of the
-                same color.
+                Keep the daisy on top. Look at the <strong>front tile</strong>{" "}
+                of the petal nearest you: it has some color besides white. Turn
+                the up face until that tile sits directly above the center of
+                the same color.
               </p>
-              <AlgChip alg="U'" label="Line up the front petal" />
             </>
           ),
         },
@@ -432,15 +510,18 @@ export const beginnersMethod: Guide = {
           camera: LOW_CAM,
           setup: SETUPS.daisy,
           highlight: whiteEdgesFocus,
+          spotlight: piece("white", "blue"),
           demo: "F2",
+          demoNotes: [
+            "A half turn: the white tile dives to the bottom face, and the side color stays glued to its center the whole way down.",
+          ],
           content: (
             <>
               <p>
                 With the petal matched, turn that face twice. The white tile
-                travels to the bottom face, and the matched color stays glued to
-                its center on the way down.
+                travels to the bottom face, and the matched color stays glued
+                to its center on the way down.
               </p>
-              <AlgChip alg="F2" label="Petal goes down" />
             </>
           ),
         },
@@ -450,7 +531,15 @@ export const beginnersMethod: Guide = {
           camera: LOW_CAM,
           setup: SETUPS.crossMismatch,
           highlight: whiteEdgesFocus,
+          spotlight: whiteEdges,
           demo: DEMOS.crossAround,
+          demoNotes: [
+            "Match the first petal over its center.",
+            "Send it down.",
+            "Second petal down.",
+            "Third petal down.",
+            "And the last one — that is the cross.",
+          ],
           pace: 0.65,
           content: (
             <>
@@ -458,7 +547,6 @@ export const beginnersMethod: Guide = {
                 Repeat for the remaining petals: match, send down, move to the
                 next face. Four petals, four double turns.
               </p>
-              <AlgChip alg={DEMOS.crossAround} label="All four, matched and sent down" />
             </>
           ),
         },
@@ -468,19 +556,21 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.crossDone,
           highlight: whiteEdgesFocus,
+          spotlight: whiteEdges,
           content: (
             <>
               <p>
-                Flip the cube over and admire it: a white cross, with each arm&apos;s
-                side tile matching the <Swatch color="green" />{" "}
+                Flip the cube over and admire it: a white cross, with each
+                arm&apos;s side tile matching the <Swatch color="green" />{" "}
                 <Swatch color="red" /> <Swatch color="blue" />{" "}
-                <Swatch color="orange" /> center below it. That side matching is
-                what separates a real cross from a lucky daisy.
+                <Swatch color="orange" /> center below it. That side matching
+                is what separates a real cross from a lucky daisy.
               </p>
               <Tip>
                 <p>
-                  Master one stage by re-scrambling and repeating it a few times
-                  before moving on. Speed comes from certainty, not rushing.
+                  Master one stage by re-scrambling and repeating it a few
+                  times before moving on. Speed comes from certainty, not
+                  rushing.
                 </p>
               </Tip>
             </>
@@ -494,14 +584,32 @@ export const beginnersMethod: Guide = {
           highlight: whiteEdgesFocus,
           interaction: "execute",
           goal: hasWhiteCross,
-          goalText: "complete the white cross with matching side colors.",
-          hint: "The petals are all misaligned by the same amount. Turn the top face until one matches its center, check the others, then send each one down with a double turn.",
-          solution: DEMOS.crossPracticeSolution,
+          goalText: "Complete the white cross with matching side colors.",
+          drills: [
+            {
+              setup: SETUPS.crossPractice,
+              label: "Half spin",
+              hint: "The petals are all misaligned by the same amount. Turn the top face until one matches its center, check the others, then send each one down with a double turn.",
+              solution: DEMOS.crossPracticeSolution,
+            },
+            {
+              setup: `${DAISY_SETUP} U'`,
+              label: "Quarter off",
+              hint: "One quarter turn of the top lines every petal up at once. Then four double turns.",
+              solution: "U F2 R2 B2 L2",
+            },
+            {
+              setup: `${DAISY_SETUP} U`,
+              label: "Other way",
+              hint: "Same idea, but the top needs to turn the other direction this time.",
+              solution: "U' F2 R2 B2 L2",
+            },
+          ],
           content: (
             <>
               <p>
-                Here is a full daisy with every petal out of position. Match and
-                sink all four.
+                A full daisy with every petal out of position. Match and sink
+                all four, three different ways.
               </p>
             </>
           ),
@@ -513,20 +621,22 @@ export const beginnersMethod: Guide = {
       title: "The white corners",
       summary:
         "Finish layer one by walking each white corner into its slot with a four move pattern.",
+      outcome: { setup: `${SETUPS.layerOneDone} x2`, caption: "Layer one" },
       steps: [
         {
           id: "corners-place",
           title: "Where a corner belongs",
           camera: DEFAULT_CAM,
           highlight: layerOneFocus,
+          spotlight: piece("white", "red", "blue"),
           content: (
             <>
               <p>
-                Hold the cube with the white cross <strong>up</strong>. A corner
-                piece belongs exactly where its three colors meet: the white,
-                red, and blue corner goes between the white, red, and blue
-                centers. No exceptions, so you can always work out a corner&apos;s
-                home just by reading its colors.
+                Hold the cube with the white cross <strong>up</strong>. A
+                corner piece belongs exactly where its three colors meet: the
+                glowing white, red, and blue corner goes between the white,
+                red, and blue centers. No exceptions, so you can always work
+                out a corner&apos;s home just by reading its colors.
               </p>
             </>
           ),
@@ -537,7 +647,11 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.cornerAlignCase,
           highlight: layerOneFocus,
+          spotlight: piece("white", "red", "green"),
           demo: "D2",
+          demoNotes: [
+            "The bottom face spins until the glowing corner sits directly between the two side centers matching its colors — right under its home.",
+          ],
           content: (
             <>
               <p>
@@ -546,7 +660,6 @@ export const beginnersMethod: Guide = {
                 between the two side centers that match its colors, right under
                 its home.
               </p>
-              <AlgChip alg="D2" label="Slide it under its slot" />
             </>
           ),
         },
@@ -556,21 +669,21 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.cornerRightCase,
           highlight: layerOneFocus,
+          spotlight: piece("white", "red", "green"),
           demo: CORNER_RIGHT,
+          demoNotes: [
+            "The corner slides along the bottom, out of the way.",
+            "The right face opens its slot downward.",
+            "The bottom carries the corner into the open slot.",
+            "The right face closes — the corner rides up into its home.",
+          ],
           content: (
             <>
               <p>
                 Hold the cube so the corner&apos;s white tile faces you. If the
                 corner sits on the <strong>right</strong> side of the front,
-                use:
-              </p>
-              <AlgChip alg={CORNER_RIGHT} label="Right side insert" />
-              <p>
-                Think of it as one motion: <span className="font-mono">D&apos;</span>{" "}
-                moves the corner out of the way,{" "}
-                <span className="font-mono">R&apos;</span> opens its slot,{" "}
-                <span className="font-mono">D</span> carries it in, and{" "}
-                <span className="font-mono">R</span> lifts it home.
+                walk it in with four moves. Think of it as one motion: out of
+                the way, open the slot, carry it in, lift it home.
               </p>
             </>
           ),
@@ -581,20 +694,20 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.cornerLeftCase,
           highlight: layerOneFocus,
+          spotlight: piece("white", "orange", "green"),
           demo: CORNER_LEFT,
+          demoNotes: [
+            "The corner slides aside along the bottom.",
+            "The left face opens its slot.",
+            "The bottom carries the corner in.",
+            "The left face closes and lifts it home.",
+          ],
           content: (
             <>
               <p>
                 Mirror image: if the white tile faces you on the{" "}
                 <strong>left</strong> side of the front, the same dance runs
                 through the left hand.
-              </p>
-              <AlgChip alg={CORNER_LEFT} label="Left side insert" />
-              <p>
-                <span className="font-mono">D</span> moves the corner aside,{" "}
-                <span className="font-mono">L</span> opens the slot,{" "}
-                <span className="font-mono">D&apos;</span> carries it in, and{" "}
-                <span className="font-mono">L&apos;</span> lifts it home.
               </p>
             </>
           ),
@@ -605,19 +718,22 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.cornerTopCase,
           highlight: layerOneFocus,
+          spotlight: piece("white", "green", "red"),
           demo: DEMOS.cornerEscape,
           demoTokens: ["y'", "R'", "D'", "R"],
+          demoNotes: [
+            "Re-grip: the whole cube turns so the stuck corner sits on the right. No layers move.",
+            "The right face opens beneath the corner.",
+            "The bottom pulls the corner down and out of the top layer.",
+            "Close the slot. The corner now waits in the bottom layer, ready for the normal routine.",
+          ],
           content: (
             <>
               <p>
                 If a white corner sits in the top layer but in the wrong spot,
-                evict it first. Hold the cube so the corner is on the right, then
-                drop it to the bottom layer:
-              </p>
-              <AlgChip alg={DEMOS.cornerEscape} label="Drop it out" />
-              <p>
-                Now it is in the bottom layer where the normal routine applies:
-                park it under its slot and insert.
+                evict it first. Hold the cube so the corner is on the right,
+                then drop it to the bottom layer. From there, park it under its
+                slot and insert as usual.
               </p>
             </>
           ),
@@ -628,16 +744,22 @@ export const beginnersMethod: Guide = {
           camera: LOW_CAM,
           setup: SETUPS.cornerDownCase,
           highlight: layerOneFocus,
+          spotlight: piece("white", "green", "red"),
           demo: CORNER_DOWN_FIX,
+          demoNotes: [
+            "The front face swings the corner out of its spot — the white tile leaves the floor.",
+            "The bottom slides the corner around, out of the way.",
+            "The front face returns to where it was.",
+            "A half turn brings the corner back under its slot — white now faces front, ready to insert.",
+          ],
           content: (
             <>
               <p>
                 One awkward case remains: the corner is under its slot but its
-                white tile points straight down, so neither insert applies. Twist
-                it out and back to make the white tile face front:
+                white tile points straight down, so neither insert applies.
+                Twist it out and back to make the white tile face front, then
+                insert it with the moves you already know.
               </p>
-              <AlgChip alg={CORNER_DOWN_FIX} label="Turn white to the front" />
-              <p>Then insert it with the moves you already know.</p>
             </>
           ),
         },
@@ -649,14 +771,38 @@ export const beginnersMethod: Guide = {
           highlight: layerOneFocus,
           interaction: "execute",
           goal: firstLayerSolved,
-          goalText: "insert the last white corner to complete layer one.",
-          hint: "The white tile faces you on the left corner. Use the left insert: D L D' L'.",
-          solution: CORNER_LEFT,
+          goalText: "Insert the last white corner to complete layer one.",
+          drills: [
+            {
+              setup: SETUPS.cornerLeftCase,
+              label: "On the left",
+              hint: "The white tile faces you on the left corner. Use the left insert: D L D\u2032 L\u2032.",
+              solution: CORNER_LEFT,
+            },
+            {
+              setup: SETUPS.cornerRightCase,
+              label: "On the right",
+              hint: "The white tile faces you on the right corner. Use the right insert: D\u2032 R\u2032 D R.",
+              solution: CORNER_RIGHT,
+            },
+            {
+              setup: SETUPS.cornerAlignCase,
+              label: "Park it first",
+              hint: "The corner is in the bottom layer but not under its slot yet. Spin the bottom until its colors sit between the matching centers, then insert to the right.",
+              solution: `D2 ${CORNER_RIGHT}`,
+            },
+            {
+              setup: SETUPS.cornerDownCase,
+              label: "Facing down",
+              hint: "White points at the floor. Twist it out and back first — F D\u2032 F\u2032 D2 — then use the right insert.",
+              solution: `${CORNER_DOWN_FIX} ${CORNER_RIGHT}`,
+            },
+          ],
           content: (
             <>
               <p>
-                One corner to go, already parked under its slot. Bring layer one
-                home.
+                Four corners, four situations. Each drill is one corner away
+                from a finished layer.
               </p>
             </>
           ),
@@ -671,8 +817,8 @@ export const beginnersMethod: Guide = {
               <p>
                 The entire first layer is done: a solid white face with a
                 matching ring of colors around it. Now flip the cube over so
-                white faces <strong>down</strong>. It stays there for the rest of
-                the solve, and everything from here happens on top.
+                white faces <strong>down</strong>. It stays there for the rest
+                of the solve, and everything from here happens on top.
               </p>
             </>
           ),
@@ -684,6 +830,7 @@ export const beginnersMethod: Guide = {
       title: "The middle layer",
       summary:
         "Four edges stand between you and two thirds of the cube. One pattern, mirrored left and right, handles them all.",
+      outcome: { setup: SETUPS.middleDone, caption: "Two layers" },
       steps: [
         {
           id: "middle-line",
@@ -691,18 +838,19 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.insertRightCase,
           highlight: noYellowFocus,
+          spotlight: piece("red", "blue"),
           content: (
             <>
               <p>
-                Pick any front face. Turn the <strong>top face</strong> until the
-                edge above the center forms a vertical line of one color with it,
-                like the <Swatch color="blue" /> blue line here. Only edges{" "}
-                <strong>without yellow</strong> belong in the middle layer, so
-                skip any edge showing yellow.
+                Pick any front face. Turn the <strong>top face</strong> until
+                the edge above the center forms a vertical line of one color
+                with it, like the <Swatch color="blue" /> blue line the glowing
+                edge makes here. Only edges <strong>without yellow</strong>{" "}
+                belong in the middle layer, so skip any edge showing yellow.
               </p>
               <p>
-                Now read the edge&apos;s top tile. Its color tells you whether the
-                edge needs to travel left or right to reach its slot.
+                Now read the edge&apos;s top tile. Its color tells you whether
+                the edge needs to travel left or right to reach its slot.
               </p>
             </>
           ),
@@ -713,19 +861,26 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.insertRightCase,
           highlight: noYellowFocus,
+          spotlight: piece("red", "blue"),
           demo: INSERT_RIGHT,
+          demoNotes: [
+            "First half begins: the edge steps aside while its matching corner comes up to meet it.",
+            null,
+            null,
+            "The pair is together in the top layer.",
+            "Second half: line the pair up over the empty slot.",
+            null,
+            null,
+            "The front closes — the edge settles into its slot.",
+          ],
           pace: 0.7,
           content: (
             <>
               <p>
                 The top tile here is <Swatch color="red" /> red, matching the
-                center on the right. The edge moves right, in two halves:
-              </p>
-              <AlgChip alg={INSERT_RIGHT} label="Insert to the right" />
-              <p>
-                The first four moves place the edge next to its corner. The last
-                four carry it into the slot. Step through slowly with the player
-                and watch the edge the whole way.
+                center on the right. The edge moves right, in two halves of
+                four moves. Step through slowly and keep your eye on the
+                glowing edge the whole way.
               </p>
             </>
           ),
@@ -736,15 +891,25 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.insertLeftCase,
           highlight: noYellowFocus,
+          spotlight: piece("orange", "blue"),
           demo: INSERT_LEFT,
+          demoNotes: [
+            "First half: the edge steps aside, mirrored to the left this time.",
+            null,
+            null,
+            "Pair complete.",
+            "Second half: carry the pair into the slot.",
+            null,
+            null,
+            "Home.",
+          ],
           pace: 0.7,
           content: (
             <>
               <p>
                 Here the top tile is <Swatch color="orange" /> orange, matching
-                the left center, so everything mirrors:
+                the left center, so everything mirrors: same dance, other hand.
               </p>
-              <AlgChip alg={INSERT_LEFT} label="Insert to the left" />
             </>
           ),
         },
@@ -754,16 +919,26 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.middleStuckCase,
           highlight: noYellowFocus,
+          spotlight: piece("red", "blue"),
           demo: INSERT_RIGHT,
+          demoNotes: [
+            "The glowing edge is stuck in the front-right slot the wrong way around. Run the right insert once…",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "…and it pops out into the top layer, where the normal routine takes over.",
+          ],
           pace: 0.7,
           content: (
             <>
               <p>
                 Sometimes no vertical line is possible from any side, because a
                 middle edge is sitting in a slot the wrong way around. Hold the
-                cube so that misplaced edge is in the front right slot, then run
-                the right insert once. It ejects the stuck edge into the top
-                layer, where the normal routine takes over.
+                cube so that misplaced edge is in the front right slot, then
+                run the right insert once to eject it.
               </p>
             </>
           ),
@@ -776,14 +951,32 @@ export const beginnersMethod: Guide = {
           highlight: noYellowFocus,
           interaction: "execute",
           goal: middleLayerSolved,
-          goalText: "insert the last middle layer edge.",
-          hint: "Turn the top face first to form the vertical line, then read the top tile. It matches the right center, so insert to the right.",
-          solution: DEMOS.middlePracticeSolution,
+          goalText: "Insert the last middle layer edge.",
+          drills: [
+            {
+              setup: SETUPS.middlePractice,
+              label: "Goes right",
+              hint: "Turn the top face first to form the vertical line, then read the top tile. It matches the right center, so insert to the right.",
+              solution: DEMOS.middlePracticeSolution,
+            },
+            {
+              setup: `x2 ${INV_INSERT_LEFT} U`,
+              label: "Goes left",
+              hint: "Form the line, read the top tile — it matches the left center this time. Mirror everything.",
+              solution: `U' ${INSERT_LEFT}`,
+            },
+            {
+              setup: `x2 ${INV_INSERT_RIGHT} U2`,
+              label: "Half spin",
+              hint: "The edge starts opposite its face. Two top turns make the line, then insert to the right.",
+              solution: `U2 ${INSERT_RIGHT}`,
+            },
+          ],
           content: (
             <>
               <p>
-                One edge left, and it is not lined up yet. Form the line, pick a
-                direction, insert.
+                One edge left in each drill, and none of them are lined up yet.
+                Form the line, pick a direction, insert.
               </p>
             </>
           ),
@@ -811,6 +1004,7 @@ export const beginnersMethod: Guide = {
       title: "The yellow cross",
       summary:
         "Ignore the corners entirely. One six move algorithm turns whatever you have into a yellow plus sign.",
+      outcome: { setup: SETUPS.suneNone, caption: "Yellow cross" },
       steps: [
         {
           id: "ycross-cases",
@@ -818,12 +1012,13 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.yellowL,
           highlight: yellowEdgesFocus,
+          spotlight: yellowEdges,
           content: (
             <>
               <p>
                 Look only at the yellow <strong>edge</strong> tiles on top and
-                ignore the corners. You will see one of three shapes: a lone dot,
-                an L, or a line.
+                ignore the corners. You will see one of three shapes: a lone
+                dot, an L, or a line.
               </p>
               <div className="flex flex-wrap items-end gap-6">
                 <TopView setup={SETUPS.yellowDot} label="Dot" dimNonYellow />
@@ -845,16 +1040,24 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.yellowL,
           highlight: yellowEdgesFocus,
+          spotlight: yellowEdges,
           demo: YELLOW_CROSS,
+          demoNotes: [
+            "Three clockwise moves to open: F…",
+            "…U…",
+            "…R. Say it: FUR.",
+            "Now FUR \u201csays\u201d the reverse: U\u2032…",
+            "…R\u2032…",
+            "…F\u2032. FUR says U\u2032R\u2032F\u2032 — and the cross appears.",
+          ],
           pace: 0.7,
           content: (
             <>
-              <p>With the shape held correctly, run:</p>
-              <AlgChip alg={YELLOW_CROSS} label="Toward the yellow cross" />
+              <p>With the shape held correctly, run the six moves below.</p>
               <Tip>
                 <p>
-                  Remember it as <strong>FUR says U&apos;R&apos;F&apos;</strong>. The
-                  first three moves go clockwise, the next three undo them
+                  Remember it as <strong>FUR says U&#8242;R&#8242;F&#8242;</strong>.
+                  The first three moves go clockwise, the next three undo them
                   counterclockwise in reverse order.
                 </p>
               </Tip>
@@ -867,15 +1070,29 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.yellowLine,
           highlight: yellowEdgesFocus,
+          spotlight: yellowEdges,
           demo: DEMOS.yellowLine2x,
+          demoNotes: [
+            "First pass, starting from a line…",
+            null,
+            null,
+            null,
+            null,
+            null,
+            "Re-hold to match a picture, then a second pass finishes the cross.",
+            null,
+            null,
+            null,
+            null,
+            null,
+          ],
           pace: 0.75,
           content: (
             <>
               <p>
-                One pass does not always finish the cross. It always moves you
-                one shape closer: dot becomes L, L becomes cross, and a line
-                takes a pass or two depending on where its edges came from.
-                After each run, <strong>rematch</strong> your cube to one of the
+                One pass does not always finish the cross, but it always moves
+                you one shape closer: dot becomes L, L becomes cross. After
+                each run, <strong>rematch</strong> your cube to one of the
                 three pictures and run it again.
               </p>
             </>
@@ -889,15 +1106,32 @@ export const beginnersMethod: Guide = {
           highlight: yellowEdgesFocus,
           interaction: "execute",
           goal: hasYellowCross,
-          goalText: "form the yellow cross on top.",
-          hint: "This is the dot, the longest case. Run the algorithm, re-hold to match a picture, and repeat. It can take three passes.",
-          solution: DEMOS.yellowDotSolution,
+          goalText: "Form the yellow cross on top.",
+          drills: [
+            {
+              setup: SETUPS.yellowDot,
+              label: "The dot",
+              hint: "The longest case. Run the algorithm, re-hold to match a picture, and repeat. It can take three passes.",
+              solution: DEMOS.yellowDotSolution,
+            },
+            {
+              setup: SETUPS.yellowL,
+              label: "The L",
+              hint: "Arms to the back and left, then one pass: F U R U\u2032 R\u2032 F\u2032.",
+              solution: YELLOW_CROSS,
+            },
+            {
+              setup: SETUPS.yellowLine,
+              label: "The line",
+              hint: "Lay the line horizontally. This one takes two passes with a re-hold between.",
+              solution: DEMOS.yellowLine2x,
+            },
+          ],
           content: (
             <>
               <p>
-                A dot, the longest road to the cross. Work the algorithm and the
-                re-holds yourself. The player&apos;s Show me will walk it if you get
-                lost.
+                All three shapes, hardest first. Work the algorithm and the
+                re-holds yourself; Show me will walk any drill if you get lost.
               </p>
             </>
           ),
@@ -909,18 +1143,20 @@ export const beginnersMethod: Guide = {
       title: "Orient the corners",
       summary:
         "Make the whole top face yellow. Count the yellow corner tiles on top, hold accordingly, repeat one algorithm.",
+      outcome: { setup: SETUPS.cornersAdjacent, caption: "Top all yellow" },
       steps: [
         {
           id: "orient-cases",
           title: "Count the yellow corners",
           camera: DEFAULT_CAM,
           setup: SETUPS.suneFish,
+          spotlight: yellowCorners,
           content: (
             <>
               <p>
-                With the cross done, count how many <strong>corner</strong> tiles
-                on the top face are yellow: none, one, or two. Each count has a
-                hold, and a saying to remember it by.
+                With the cross done, count how many <strong>corner</strong>{" "}
+                tiles on the top face are yellow: none, one, or two. Each count
+                has a hold, and a saying to remember it by.
               </p>
               <div className="flex flex-wrap items-end gap-6">
                 <TopView setup={SETUPS.suneNone} label="None: yellow tile on the left face" dimNonYellow />
@@ -928,8 +1164,8 @@ export const beginnersMethod: Guide = {
                 <TopView setup={SETUPS.suneTwo} label="Two: left thumb on you" dimNonYellow />
               </div>
               <p>
-                <strong>None yellow:</strong> hold so a yellow corner tile looks
-                at you from the <strong>left face</strong>. &ldquo;None,
+                <strong>None yellow:</strong> hold so a yellow corner tile
+                looks at you from the <strong>left face</strong>. &ldquo;None,
                 left.&rdquo;
               </p>
               <p>
@@ -950,15 +1186,24 @@ export const beginnersMethod: Guide = {
           title: "The corner twist",
           camera: DEFAULT_CAM,
           setup: SETUPS.suneFish,
+          spotlight: yellowCorners,
           demo: SUNE,
+          demoNotes: [
+            "The right hand starts.",
+            "The top always turns clockwise in this algorithm.",
+            "The right face alternates direction — counterclockwise now.",
+            "Top clockwise again.",
+            "Right, back the other way.",
+            "A double turn on top.",
+            "And close. Count the yellow corners again.",
+          ],
           pace: 0.7,
           content: (
             <>
-              <p>Held correctly, run:</p>
-              <AlgChip alg={SUNE} label="Twist the corners" />
               <p>
-                Notice the rhythm: the right face alternates direction every
-                other time, while the up face always turns clockwise.
+                Held correctly, run the seven moves below. Notice the rhythm:
+                the right face alternates direction every other time, while the
+                up face always turns clockwise.
               </p>
             </>
           ),
@@ -968,14 +1213,31 @@ export const beginnersMethod: Guide = {
           title: "Repeat until solid",
           camera: DEFAULT_CAM,
           setup: SETUPS.suneNone,
+          spotlight: yellowCorners,
           demo: DEMOS.suneTwice,
+          demoNotes: [
+            "First pass…",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "Recount the yellow corners, re-hold by the sayings, and go again.",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+          ],
           pace: 0.8,
           content: (
             <>
               <p>
-                Like the cross, this stage loops: run the algorithm, recount the
-                yellow corners, re-hold by the sayings, and run it again. You may
-                need several passes, and that is normal.
+                Like the cross, this stage loops: run the algorithm, recount
+                the yellow corners, re-hold by the sayings, and run it again.
+                You may need several passes, and that is normal.
               </p>
             </>
           ),
@@ -987,12 +1249,32 @@ export const beginnersMethod: Guide = {
           setup: SETUPS.suneTwo,
           interaction: "execute",
           goal: yellowFaceComplete,
-          goalText: "make the entire top face yellow.",
-          hint: "Two yellow corners: left thumb on the front left yellow tile, run the algorithm, then recount and re-hold. Expect about three passes.",
-          solution: DEMOS.suneTwoSolution,
+          goalText: "Make the entire top face yellow.",
+          drills: [
+            {
+              setup: SETUPS.suneTwo,
+              label: "Two yellows",
+              hint: "Left thumb on the front-left yellow tile, run the algorithm, then recount and re-hold. Expect about three passes.",
+              solution: DEMOS.suneTwoSolution,
+            },
+            {
+              setup: SETUPS.suneFish,
+              label: "The fish",
+              hint: "Point the fish's nose to the front left. This one resolves in a single pass.",
+              solution: SUNE,
+            },
+            {
+              setup: SETUPS.suneNone,
+              label: "None yet",
+              hint: "No yellow corners on top: hold a yellow corner tile on the left face and run the algorithm. Recount, re-hold, repeat.",
+              solution: DEMOS.suneTwice,
+            },
+          ],
           content: (
             <>
-              <p>Two corners show yellow. Take it the rest of the way.</p>
+              <p>
+                Three counts, three holds. Take each one the rest of the way.
+              </p>
             </>
           ),
         },
@@ -1003,20 +1285,22 @@ export const beginnersMethod: Guide = {
       title: "Position the corners",
       summary:
         "The top is all yellow, but the corners may sit in each other's seats. Find the tail lights and swap.",
+      outcome: { setup: SETUPS.edgesCycle, caption: "Corners placed" },
       steps: [
         {
           id: "corners-pll-find",
           title: "Find the tail lights",
           camera: DEFAULT_CAM,
           setup: SETUPS.cornersAdjacent,
+          spotlight: pieces(["orange", "yellow", "green"], ["red", "yellow", "green"]),
           content: (
             <>
               <p>
                 Twist the top face until <strong>two corners</strong> land in
                 their correct spots, side colors matching the centers below.
                 Correctly placed corners sitting together look like the tail
-                lights of a car, and tail lights belong at the{" "}
-                <strong>back</strong>. Hold the cube that way.
+                lights of a car — the glowing pair here — and tail lights
+                belong at the <strong>back</strong>. Hold the cube that way.
               </p>
               <div className="flex flex-wrap items-end gap-6">
                 <TopView setup={SETUPS.cornersAdjacent} label="Tail lights, held in back" />
@@ -1030,19 +1314,29 @@ export const beginnersMethod: Guide = {
           title: "The swap",
           camera: DEFAULT_CAM,
           setup: SETUPS.cornersAdjacent,
+          spotlight: pieces(["orange", "yellow", "blue"], ["red", "yellow", "blue"]),
           demo: CORNER_PLL,
+          demoNotes: [
+            "R\u2032un to me…",
+            "Fast…",
+            "R\u2032un to me…",
+            "Back back…",
+            "Run away…",
+            "F\u2032ast…",
+            "R\u2032un to me…",
+            "Back back…",
+            "Run run away…",
+            "U\u2032p! The front corners have traded seats.",
+          ],
           pace: 0.7,
           content: (
             <>
-              <p>With the tail lights in back, swap the front two corners:</p>
-              <AlgChip alg={CORNER_PLL} label="Swap the front corners" />
-              <Tip>
-                <p>
-                  The printed guide teaches it as a chant: R&apos;un to me, Fast,
-                  R&apos;un to me, Back Back, Run away, F&apos;ast, R&apos;un to
-                  me, Back Back, Run Run away, U&apos;p.
-                </p>
-              </Tip>
+              <p>
+                With the tail lights in back, this swaps the two glowing front
+                corners. It is the longest algorithm in the method, so the
+                printed guide teaches it as a chant — follow along under each
+                move.
+              </p>
             </>
           ),
         },
@@ -1051,7 +1345,31 @@ export const beginnersMethod: Guide = {
           title: "Diagonal corners",
           camera: DEFAULT_CAM,
           setup: SETUPS.cornersDiagonal,
+          spotlight: yellowCorners,
           demo: DEMOS.cornersDiagonal2x,
+          demoNotes: [
+            "No tail lights anywhere, so run the swap once from any hold…",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            "Re-grip: tail lights just appeared. Put them in the back.",
+            "Second pass places every corner.",
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+          ],
           pace: 0.8,
           content: (
             <>
@@ -1063,18 +1381,51 @@ export const beginnersMethod: Guide = {
             </>
           ),
         },
+        {
+          id: "corners-pll-practice",
+          title: "Seat the corners",
+          camera: DEFAULT_CAM,
+          setup: SETUPS.cornersAdjacent,
+          interaction: "execute",
+          goal: yellowCornersPositioned,
+          goalText: "Get every yellow corner into its correct seat.",
+          drills: [
+            {
+              setup: SETUPS.cornersAdjacent,
+              label: "Tail lights",
+              hint: "The tail lights are already in the back. One pass of the chant swaps the front pair.",
+              solution: CORNER_PLL,
+            },
+            {
+              setup: SETUPS.cornersDiagonal,
+              label: "Diagonal",
+              hint: "No tail lights yet. Run the swap once from anywhere, then put the new tail lights in back and run it again.",
+              solution: DEMOS.cornersDiagonal2x,
+            },
+          ],
+          content: (
+            <>
+              <p>
+                Corners may look solved from the top — yellow everywhere — but
+                their side colors give them away. Seat them properly.
+              </p>
+            </>
+          ),
+        },
       ],
     },
     {
       id: "position-edges",
       title: "Position the edges",
       summary: "Four edges, one cycle, and the cube is yours.",
+      outcome: { setup: "", caption: "Solved" },
       steps: [
         {
           id: "edges-pll-hold",
           title: "Hold the solid face back",
           camera: DEFAULT_CAM,
           setup: SETUPS.edgesCycle,
+          spotlight: piece("orange", "yellow"),
           content: (
             <>
               <p>
@@ -1083,10 +1434,10 @@ export const beginnersMethod: Guide = {
                 solid yet, any back works for the first pass.
               </p>
               <p>
-                Before you turn anything, read the unsolved edge on the front: if
-                its color matches the <strong>left</strong> center, the edges
-                need to cycle left. If it matches the <strong>right</strong>{" "}
-                center, they cycle right.
+                Before you turn anything, read the glowing unsolved edge on the
+                front: if its color matches the <strong>left</strong> center,
+                the edges need to cycle left. If it matches the{" "}
+                <strong>right</strong> center, they cycle right.
               </p>
             </>
           ),
@@ -1096,16 +1447,27 @@ export const beginnersMethod: Guide = {
           title: "The final cycle",
           camera: DEFAULT_CAM,
           setup: SETUPS.edgesCycle,
+          spotlight: cyclingYellowEdges,
           demo: EDGE_PLL,
+          demoNotes: [
+            "The bottom two layers stay safe through this whole sequence.",
+            null,
+            null,
+            null,
+            "This half turn trades the traveling edges through the middle.",
+            null,
+            null,
+            null,
+            "Close it up: three edges hopped one seat to the left.",
+          ],
           pace: 0.7,
           content: (
             <>
               <p>
-                Here the front edge matches the left center, so the edges hop
-                one seat to the left:
+                Here the front edge matches the left center, so the three
+                glowing edges hop one seat to the left. Up to three passes
+                finish the cube; usually one does it.
               </p>
-              <AlgChip alg={EDGE_PLL} label="Cycle the edges left" />
-              <p>Up to three passes finish the cube. Usually one does it.</p>
             </>
           ),
         },
@@ -1114,17 +1476,27 @@ export const beginnersMethod: Guide = {
           title: "The other direction",
           camera: DEFAULT_CAM,
           setup: SETUPS.edgesCyclePrime,
+          spotlight: cyclingYellowEdges,
           demo: EDGE_PLL_PRIME,
+          demoNotes: [
+            "Same shape as before — only the two top turns flip direction.",
+            "U\u2032 instead of U…",
+            null,
+            null,
+            null,
+            null,
+            null,
+            "…and U\u2032 again.",
+            "The edges cycle right instead of left.",
+          ],
           pace: 0.7,
           content: (
             <>
               <p>
                 On this cube the front edge matches the <strong>right</strong>{" "}
-                center instead. Same algorithm, with both{" "}
-                <span className="font-mono">U</span> turns switched to{" "}
-                <span className="font-mono">U&apos;</span>:
+                center instead. Same algorithm, with both <M>U</M> turns
+                switched to <M>{"U'"}</M>.
               </p>
-              <AlgChip alg={EDGE_PLL_PRIME} label="Cycle the edges right" />
             </>
           ),
         },
@@ -1135,13 +1507,26 @@ export const beginnersMethod: Guide = {
           setup: SETUPS.edgesCycle,
           interaction: "execute",
           goal: isSolved,
-          goalText: "finish the cube.",
-          hint: "Solid face to the back. The front edge matches the left center, so use the version with normal U turns.",
-          solution: EDGE_PLL,
+          goalText: "Finish the cube.",
+          drills: [
+            {
+              setup: SETUPS.edgesCycle,
+              label: "Cycle left",
+              hint: "Solid face to the back. The front edge matches the left center, so use the version with normal U turns.",
+              solution: EDGE_PLL,
+            },
+            {
+              setup: SETUPS.edgesCyclePrime,
+              label: "Cycle right",
+              hint: "The front edge matches the right center this time — switch both U turns to U\u2032.",
+              solution: EDGE_PLL_PRIME,
+            },
+          ],
           content: (
             <>
               <p>
-                Three edges out of place. Everything you need, you already know.
+                Three edges out of place. Everything you need, you already
+                know.
               </p>
             </>
           ),
@@ -1165,8 +1550,13 @@ export const beginnersMethod: Guide = {
                 world falls to those same eight stages.
               </p>
               <p>
-                When the layered method feels automatic, speedcubers graduate to
-                CFOP, which collapses these stages into fewer, bigger
+                Scramble the cube and run the journey end to end — this time
+                with nothing dimmed and no help lit up.
+              </p>
+              <ScrambleChip />
+              <p>
+                When the layered method feels automatic, speedcubers graduate
+                to CFOP, which collapses these stages into fewer, bigger
                 algorithms. A guide for it is on the way.
               </p>
             </>

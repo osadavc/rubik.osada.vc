@@ -1,6 +1,6 @@
 "use client";
 
-import { CaretLeftIcon } from "@phosphor-icons/react";
+import { CaretLeftIcon, XIcon } from "@phosphor-icons/react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import { CubeViewport } from "@/components/cube/cube-viewport";
@@ -9,12 +9,11 @@ import type { Guide } from "@/lib/guides/types";
 import { guideSteps } from "@/lib/guides/types";
 import { useCubeStore } from "@/store/cube-store";
 import { ChapterRail, ContentsList } from "./chapter-nav";
-import { PlaybackControls, WhenProgramLoaded } from "./playback-controls";
+import { CubeSnapshot } from "./cube-snapshot";
 import { StepBlock } from "./step-block";
 import { useActiveStep } from "./use-active-step";
 
 const ACTIVATION_DEBOUNCE_MS = 160;
-const AUTOPLAY_DELAY_MS = 550;
 
 const DIFFICULTY_LABEL = {
   beginner: "Beginner",
@@ -24,6 +23,40 @@ const DIFFICULTY_LABEL = {
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
+/** Small status pill over the cube while a practice session is running. */
+const PracticeHud = () => {
+  const practice = useCubeStore((s) => s.practice);
+  if (!practice) return null;
+  return (
+    <div className="pointer-events-none absolute inset-x-0 bottom-3 z-10 flex justify-center">
+      <div className="pointer-events-auto flex items-center gap-3 rounded-full border border-zinc-200 bg-white/95 py-1.5 pl-3.5 pr-1.5 shadow-lg shadow-zinc-900/10 backdrop-blur transition-[opacity,transform] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] starting:translate-y-2 starting:opacity-0 motion-reduce:transition-none">
+        <span className="flex items-center gap-2 text-xs font-medium text-zinc-900">
+          <span
+            aria-hidden
+            className={`h-1.5 w-1.5 rounded-full ${
+              practice.status === "solved"
+                ? "bg-emerald-500"
+                : "bg-amber-500 motion-safe:animate-pulse"
+            }`}
+          />
+          {practice.status === "solved" ? "Solved" : "Practice mode"}
+        </span>
+        <span className="text-xs tabular-nums text-zinc-400">
+          {practice.moveCount} {practice.moveCount === 1 ? "move" : "moves"}
+        </span>
+        <button
+          type="button"
+          onClick={() => useCubeStore.getState().endPractice()}
+          className="flex h-6 w-6 items-center justify-center rounded-full text-zinc-400 transition-colors duration-150 hover:bg-zinc-100 hover:text-zinc-900"
+          aria-label="End practice"
+        >
+          <XIcon size={12} weight="bold" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 export const GuideView = ({ guide }: { guide: Guide }) => {
   const steps = useMemo(() => guideSteps(guide), [guide]);
   const stepIds = useMemo(() => steps.map((s) => s.id), [steps]);
@@ -32,9 +65,9 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
     [steps]
   );
   const { activeId, registerStep } = useActiveStep(stepIds);
+  const practicing = useCubeStore((s) => s.practice !== null);
 
   const activationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const autoplayTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Drop any legacy step hash from the URL without restoring scroll position.
   useEffect(() => {
@@ -46,11 +79,12 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
     );
   }, []);
 
-  // Drive the cube from the active step.
+  // Drive the cube from the active step: set the stage, load the moves, and
+  // wait. Nothing plays until the learner presses play, and while a practice
+  // session runs, scrolling never steals the cube.
   useEffect(() => {
-    if (!activeId) return;
+    if (!activeId || practicing) return;
     if (activationTimer.current) clearTimeout(activationTimer.current);
-    if (autoplayTimer.current) clearTimeout(autoplayTimer.current);
 
     activationTimer.current = setTimeout(() => {
       const step = steps.find((s) => s.id === activeId);
@@ -60,6 +94,7 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
 
       store.snapTo(setup);
       store.setHighlight(step.highlight ?? null);
+      store.setSpotlight(step.spotlight ?? null);
       store.setCameraTarget(step.camera ?? null);
 
       if (step.demo) {
@@ -67,16 +102,6 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
           pace: step.pace,
           tokens: step.demoTokens ?? algTokens(step.demo),
         });
-        const shouldAutoplay =
-          step.autoplay !== false &&
-          step.interaction !== "execute" &&
-          !store.reducedMotion;
-        if (shouldAutoplay) {
-          autoplayTimer.current = setTimeout(
-            () => useCubeStore.getState().play(),
-            AUTOPLAY_DELAY_MS
-          );
-        }
       } else {
         store.clearProgram();
       }
@@ -84,9 +109,8 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
 
     return () => {
       if (activationTimer.current) clearTimeout(activationTimer.current);
-      if (autoplayTimer.current) clearTimeout(autoplayTimer.current);
     };
-  }, [activeId, steps, setupStates]);
+  }, [activeId, steps, setupStates, practicing]);
 
   const activeChapterIndex = useMemo(() => {
     if (!activeId) return 0;
@@ -100,6 +124,11 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
     const index = activeId ? stepIds.indexOf(activeId) : 0;
     return (Math.max(index, 0) + 1) / stepIds.length;
   }, [activeId, stepIds]);
+
+  // Focus mode: everything that is not the practiced step recedes.
+  const dimClass = practicing
+    ? "pointer-events-none opacity-20 blur-[1.5px] select-none"
+    : "";
 
   return (
     <div className="min-h-dvh">
@@ -145,11 +174,9 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
       <div className="mx-auto max-w-[90rem] lg:grid lg:grid-cols-2">
         {/* Cube panel: pinned below the header on mobile, full-height left column on desktop. */}
         <div className="sticky top-12 z-20 flex h-[42dvh] flex-col border-b border-zinc-200/80 bg-[var(--background)] shadow-[0_8px_24px_-20px_rgba(24,24,27,0.4)] lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:border-b-0 lg:shadow-none">
-          <div className="min-h-0 flex-1">
-            <CubeViewport interactive={false} />
-          </div>
-          <div className="hidden pb-6 lg:block">
-            <PlaybackControls />
+          <div className="relative min-h-0 flex-1">
+            <CubeViewport interactive />
+            <PracticeHud />
           </div>
         </div>
 
@@ -157,7 +184,9 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
         <div className="px-5 pb-28 sm:px-8 lg:px-12 lg:pb-16">
           <div className="mx-auto max-w-xl lg:mx-0 lg:max-w-[34rem]">
             {/* Guide lede: title, meta, and table of contents. */}
-            <header className="pt-14 lg:pt-20">
+            <header
+              className={`pt-14 transition-[opacity,filter] duration-500 motion-reduce:transition-none lg:pt-20 ${dimClass}`}
+            >
               <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs font-medium text-zinc-400">
                 <span>{guide.puzzle.replace("x", "\u00d7")}</span>
                 <span aria-hidden className="text-zinc-300">
@@ -186,7 +215,7 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
               <section key={chapter.id} className="pt-16 lg:pt-24">
                 <div
                   data-chapter-id={chapter.id}
-                  className="scroll-mt-[calc(42dvh+4rem)] lg:scroll-mt-24"
+                  className={`scroll-mt-[calc(42dvh+4rem)] transition-[opacity,filter] duration-500 motion-reduce:transition-none lg:scroll-mt-24 ${dimClass}`}
                 >
                   <div className="flex items-center gap-4">
                     <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
@@ -197,12 +226,24 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
                     </span>
                     <span aria-hidden className="h-px flex-1 bg-zinc-200" />
                   </div>
-                  <h2 className="mt-5 text-3xl font-semibold tracking-tight text-zinc-900">
-                    {chapter.title}
-                  </h2>
-                  <p className="mt-2.5 text-[15px] leading-relaxed text-zinc-500">
-                    {chapter.summary}
-                  </p>
+                  <div className="mt-5 flex items-start justify-between gap-6">
+                    <div>
+                      <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
+                        {chapter.title}
+                      </h2>
+                      <p className="mt-2.5 text-[15px] leading-relaxed text-zinc-500">
+                        {chapter.summary}
+                      </p>
+                    </div>
+                    {/* Where this chapter ends up, before it begins. */}
+                    {chapter.outcome && (
+                      <CubeSnapshot
+                        setup={chapter.outcome.setup}
+                        caption={chapter.outcome.caption}
+                        className="hidden shrink-0 sm:flex"
+                      />
+                    )}
+                  </div>
                 </div>
                 {chapter.steps.map((step) => (
                   <StepBlock
@@ -216,7 +257,9 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
               </section>
             ))}
 
-            <footer className="mt-8 flex items-center justify-between border-t border-zinc-200 py-10">
+            <footer
+              className={`mt-8 flex items-center justify-between border-t border-zinc-200 py-10 transition-[opacity,filter] duration-500 motion-reduce:transition-none ${dimClass}`}
+            >
               <Link
                 href="/"
                 className="group inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition-colors duration-150 hover:text-zinc-900"
@@ -240,15 +283,6 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
           </div>
         </div>
       </div>
-
-      {/* Mobile playback controls, floating at the bottom of the screen. */}
-      <WhenProgramLoaded>
-        <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-center lg:hidden">
-          <div className="pointer-events-auto rounded-2xl border border-zinc-200 bg-white/95 px-3 py-1.5 shadow-lg shadow-zinc-900/5 backdrop-blur">
-            <PlaybackControls />
-          </div>
-        </div>
-      </WhenProgramLoaded>
     </div>
   );
 };

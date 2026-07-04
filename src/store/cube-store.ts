@@ -39,6 +39,16 @@ export type Program = {
   pace: number;
 };
 
+export type PracticeSession = {
+  stepId: string;
+  drillIndex: number;
+  status: "active" | "solved";
+  /** Face turns made by the user in this attempt. */
+  moveCount: number;
+  /** True once "Show me" played the solution for this attempt. */
+  assisted: boolean;
+};
+
 export type CameraPose = { azimuth: number; polar: number };
 
 type CubeStore = {
@@ -48,7 +58,12 @@ type CubeStore = {
   speed: number;
   reducedMotion: boolean;
   highlight: HighlightFn | null;
+  /** Pieces to track with a pulsing glow, independent of the dim mask. */
+  spotlight: HighlightFn | null;
   program: Program | null;
+  practice: PracticeSession | null;
+  /** performance.now() of the last solve celebration, drives the glow wave. */
+  celebrateAt: number | null;
   cameraTarget: CameraPose | null;
   /** Bumped on every instant state replacement so views can crossfade. */
   snapId: number;
@@ -66,13 +81,21 @@ type CubeStore = {
   pause: () => void;
   stepForward: () => void;
   stepBackward: () => void;
+  /** Jump the loaded program to `cursor`, optionally animating that one move. */
+  seekTo: (cursor: number, opts?: { playMove?: boolean }) => void;
   restartProgram: (opts?: { autoplay?: boolean }) => void;
   userMove: (move: Move) => void;
   scramble: () => void;
   resetSolved: () => void;
+  startPractice: (stepId: string, drillIndex: number) => void;
+  setPracticeDrill: (drillIndex: number) => void;
+  practiceSolved: () => void;
+  markPracticeAssisted: () => void;
+  endPractice: () => void;
   setSpeed: (speed: number) => void;
   setReducedMotion: (value: boolean) => void;
   setHighlight: (fn: HighlightFn | null) => void;
+  setSpotlight: (fn: HighlightFn | null) => void;
   setCameraTarget: (pose: CameraPose | null) => void;
 };
 
@@ -92,7 +115,10 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
   speed: 1,
   reducedMotion: false,
   highlight: null,
+  spotlight: null,
   program: null,
+  practice: null,
+  celebrateAt: null,
   cameraTarget: null,
   snapId: 0,
 
@@ -187,6 +213,32 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
     });
   },
 
+  seekTo: (cursor, opts) => {
+    const { program, speed, reducedMotion } = get();
+    if (!program) return;
+    const clamped = Math.max(0, Math.min(cursor, program.moves.length));
+    const state = applyMoves(program.baseState, program.moves.slice(0, clamped));
+    set((prev) => ({
+      state,
+      queue: [],
+      anim: null,
+      snapId: prev.snapId + 1,
+      program: { ...program, cursor: clamped, dirty: false, status: "paused" },
+    }));
+    if (opts?.playMove && clamped < program.moves.length) {
+      const move = program.moves[clamped];
+      set({
+        queue: [
+          {
+            move,
+            source: "program",
+            duration: moveDuration(move, speed, program.pace, reducedMotion),
+          },
+        ],
+      });
+    }
+  },
+
   restartProgram: (opts) => {
     const { program } = get();
     if (!program) return;
@@ -201,7 +253,7 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
   },
 
   userMove: (move) => {
-    const { program, speed, reducedMotion, queue } = get();
+    const { program, practice, speed, reducedMotion, queue } = get();
     // Keep interaction responsive: never build a long backlog from fast drags.
     if (queue.length > 2) return;
     if (program && (program.status === "playing" || program.cursor > 0)) {
@@ -212,6 +264,9 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
           dirty: true,
         },
       });
+    }
+    if (practice && practice.status === "active") {
+      set({ practice: { ...practice, moveCount: practice.moveCount + 1 } });
     }
     set((prev) => ({
       queue: [
@@ -247,9 +302,40 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
     set({ program: null });
   },
 
+  startPractice: (stepId, drillIndex) =>
+    set({
+      practice: { stepId, drillIndex, status: "active", moveCount: 0, assisted: false },
+    }),
+
+  setPracticeDrill: (drillIndex) => {
+    const { practice } = get();
+    if (!practice) return;
+    set({
+      practice: { ...practice, drillIndex, status: "active", moveCount: 0, assisted: false },
+    });
+  },
+
+  practiceSolved: () => {
+    const { practice } = get();
+    if (!practice || practice.status === "solved") return;
+    set({
+      practice: { ...practice, status: "solved" },
+      celebrateAt: performance.now(),
+    });
+  },
+
+  markPracticeAssisted: () => {
+    const { practice } = get();
+    if (!practice) return;
+    set({ practice: { ...practice, assisted: true } });
+  },
+
+  endPractice: () => set({ practice: null }),
+
   setSpeed: (speed) => set({ speed }),
   setReducedMotion: (value) => set({ reducedMotion: value }),
   setHighlight: (fn) => set({ highlight: fn }),
+  setSpotlight: (fn) => set({ spotlight: fn }),
   setCameraTarget: (pose) => set({ cameraTarget: pose }),
 }));
 

@@ -5,6 +5,17 @@ export type CameraPose = { azimuth: number; polar: number };
 
 export type StepInteraction = "watch" | "execute";
 
+/** One scramble variant for a practice step. */
+export type PracticeDrill = {
+  /** Moves from solved that produce the drill's starting cube. */
+  setup: string;
+  /** Short human name shown in the drill switcher, e.g. "Flipped petal". */
+  label: string;
+  hint?: string;
+  /** Algorithm that reaches the goal; also drives the goal snapshot and "Show me". */
+  solution?: string;
+};
+
 export type GuideStep = {
   id: string;
   /** Short label used in navigation. */
@@ -16,21 +27,21 @@ export type GuideStep = {
   demo?: string;
   /** Display tokens for the demo, defaults to demo.split(" "). */
   demoTokens?: string[];
-  /** Autoplay the demo on activation. Defaults to true when demo is set. */
-  autoplay?: boolean;
+  /** Per-token teaching notes, aligned with demoTokens. Null skips a note. */
+  demoNotes?: (string | null)[];
   /** Demo pace multiplier, lower is slower. Defaults to 0.8. */
   pace?: number;
   /** Stickers outside this predicate render dimmed, like the PDF's gray tiles. */
   highlight?: (sticker: Sticker) => boolean;
+  /** Pieces to track with a pulsing glow: "watch this one travel". */
+  spotlight?: (sticker: Sticker) => boolean;
   interaction?: StepInteraction;
-  /** Target state for execute steps; only used by tests to validate solutions. */
+  /** Target state for execute steps. */
   goal?: (state: CubeState) => boolean;
   /** One-sentence description of the goal, shown in the practice block. */
   goalText?: string;
-  /** Extra hint text revealed on request in practice blocks. */
-  hint?: string;
-  /** Algorithm played by "Show me" in practice blocks. */
-  solution?: string;
+  /** Practice variants. The first drill should match `setup`. */
+  drills?: PracticeDrill[];
   camera?: CameraPose;
 };
 
@@ -39,6 +50,8 @@ export type GuideChapter = {
   title: string;
   /** Short chapter subtitle for the index. */
   summary: string;
+  /** End state of the chapter, shown as a snapshot in the chapter header. */
+  outcome?: { setup: string; caption: string };
   steps: GuideStep[];
 };
 
@@ -67,3 +80,10 @@ export const guideStepCount = (guide: Guide): number =>
 
 export const guideSteps = (guide: Guide): GuideStep[] =>
   guide.chapters.flatMap((chapter) => chapter.steps);
+
+/** Kind of a step, used for the phase eyebrow in the lesson column. */
+export const stepKind = (step: GuideStep): "learn" | "watch" | "practice" => {
+  if (step.interaction === "execute") return "practice";
+  if (step.demo) return "watch";
+  return "learn";
+};

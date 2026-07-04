@@ -1,4 +1,4 @@
-import type { Sticker } from "@/lib/cube";
+import type { ColorName, Sticker } from "@/lib/cube";
 
 export const centersOnly = (s: Sticker): boolean => s.pieceType === "center";
 
@@ -24,3 +24,43 @@ export const noYellowFocus = (s: Sticker): boolean =>
 /** Yellow cross stage: corners do not matter yet. */
 export const yellowEdgesFocus = (s: Sticker): boolean =>
   !(s.pieceType === "corner" && s.pieceColors.includes("yellow"));
+
+/* Spotlight predicates: pieces the cube makes pulse so the eye can track them. */
+
+/** Exactly the one piece whose sticker colors are `colors`. */
+export const piece =
+  (...colors: ColorName[]) =>
+  (s: Sticker): boolean =>
+    s.pieceColors.length === colors.length &&
+    colors.every((c) => s.pieceColors.includes(c));
+
+/** Union of several `piece` predicates. */
+export const pieces = (...sets: ColorName[][]): ((s: Sticker) => boolean) => {
+  const fns = sets.map((set) => piece(...set));
+  return (s) => fns.some((fn) => fn(s));
+};
+
+export const whiteEdges = (s: Sticker): boolean =>
+  s.pieceType === "edge" && s.pieceColors.includes("white");
+
+/** Finished petals: white edges already sitting in the top layer. */
+export const whiteEdgesOnTop = (s: Sticker): boolean =>
+  whiteEdges(s) && s.position[1] === 1;
+
+export const whiteCorners = (s: Sticker): boolean =>
+  s.pieceType === "corner" && s.pieceColors.includes("white");
+
+export const middleEdges = (s: Sticker): boolean =>
+  s.pieceType === "edge" &&
+  !s.pieceColors.includes("white") &&
+  !s.pieceColors.includes("yellow");
+
+export const yellowEdges = (s: Sticker): boolean =>
+  s.pieceType === "edge" && s.pieceColors.includes("yellow");
+
+export const yellowCorners = (s: Sticker): boolean =>
+  s.pieceType === "corner" && s.pieceColors.includes("yellow");
+
+/** The three yellow edges that cycle in the final stage (the green one stays home). */
+export const cyclingYellowEdges = (s: Sticker): boolean =>
+  yellowEdges(s) && !s.pieceColors.includes("green");
