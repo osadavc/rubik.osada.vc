@@ -2,40 +2,58 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 
+const ACTIVATION_RATIO = 0.42;
+const BOTTOM_THRESHOLD_PX = 16;
+
 /**
  * Scroll-spy for lesson steps. A step activates when its block crosses a
- * horizontal line at ~42% of the viewport, via IntersectionObserver only.
+ * horizontal line at ~42% of the viewport. At the bottom of the page, the
+ * last step is always selected so it can light up without extra padding.
  */
 export const useActiveStep = (stepIds: readonly string[]) => {
   const [activeId, setActiveId] = useState<string | null>(stepIds[0] ?? null);
   const elements = useRef(new Map<string, HTMLElement>());
-  const observer = useRef<IntersectionObserver | null>(null);
+  const stepIdsRef = useRef(stepIds);
+  stepIdsRef.current = stepIds;
 
-  const registerStep = useCallback((id: string, el: HTMLElement | null) => {
-    const existing = elements.current.get(id);
-    if (existing && observer.current) observer.current.unobserve(existing);
-    if (el) {
-      elements.current.set(id, el);
-      observer.current?.observe(el);
-    } else {
-      elements.current.delete(id);
+  const pickActive = useCallback(() => {
+    const ids = stepIdsRef.current;
+    if (ids.length === 0) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+    if (scrollTop + clientHeight >= scrollHeight - BOTTOM_THRESHOLD_PX) {
+      setActiveId(ids[ids.length - 1]);
+      return;
     }
+
+    const line = clientHeight * ACTIVATION_RATIO;
+    let current = ids[0];
+    for (const id of ids) {
+      const el = elements.current.get(id);
+      if (!el) continue;
+      if (el.getBoundingClientRect().top <= line) current = id;
+    }
+    setActiveId(current);
   }, []);
+
+  const registerStep = useCallback(
+    (id: string, el: HTMLElement | null) => {
+      if (el) elements.current.set(id, el);
+      else elements.current.delete(id);
+      pickActive();
+    },
+    [pickActive],
+  );
 
   useEffect(() => {
-    observer.current = new IntersectionObserver(
-      (entries) => {
-        for (const entry of entries) {
-          if (!entry.isIntersecting) continue;
-          const id = entry.target.getAttribute("data-step-id");
-          if (id) setActiveId(id);
-        }
-      },
-      { rootMargin: "-42% 0px -58% 0px", threshold: 0 },
-    );
-    for (const el of elements.current.values()) observer.current.observe(el);
-    return () => observer.current?.disconnect();
-  }, []);
+    pickActive();
+    window.addEventListener("scroll", pickActive, { passive: true });
+    window.addEventListener("resize", pickActive, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", pickActive);
+      window.removeEventListener("resize", pickActive);
+    };
+  }, [pickActive]);
 
   return { activeId, registerStep };
 };

@@ -1,4 +1,4 @@
-import { AlgChip, ScrambleChip, Swatch, Tip } from "@/components/guide/content-blocks";
+import { AlgChip, Swatch, Tip } from "@/components/guide/content-blocks";
 import { TopView } from "@/components/guide/top-view";
 import {
   firstLayerSolved,
@@ -1164,11 +1164,6 @@ export const beginnersMethod: Guide = {
                 yellow cross, orient, position, position. Every scramble in the
                 world falls to those same eight stages.
               </p>
-              <p>
-                The fastest way to make it stick is to do it again, start to
-                finish, without the guide.
-              </p>
-              <ScrambleChip />
               <p>
                 When the layered method feels automatic, speedcubers graduate to
                 CFOP, which collapses these stages into fewer, bigger

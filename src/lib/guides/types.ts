@@ -23,7 +23,7 @@ export type GuideStep = {
   /** Stickers outside this predicate render dimmed, like the PDF's gray tiles. */
   highlight?: (sticker: Sticker) => boolean;
   interaction?: StepInteraction;
-  /** Success check for execute steps, evaluated after every user move. */
+  /** Target state for execute steps; only used by tests to validate solutions. */
   goal?: (state: CubeState) => boolean;
   /** One-sentence description of the goal, shown in the practice block. */
   goalText?: string;

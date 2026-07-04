@@ -7,11 +7,18 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { useCubeStore } from "@/store/cube-store";
 import { CubeModel } from "./cube-model";
 
-const CameraRig = ({ controls }: { controls: React.RefObject<OrbitControlsImpl | null> }) => {
+const CameraRig = ({
+  controls,
+  interacting,
+}: {
+  controls: React.RefObject<OrbitControlsImpl | null>;
+  interacting: React.RefObject<boolean>;
+}) => {
   useFrame((_, delta) => {
     const { cameraTarget, setCameraTarget } = useCubeStore.getState();
     const orbit = controls.current;
-    if (!cameraTarget || !orbit) return;
+    // Never fight the user: an in-progress drag always wins over auto-reorientation.
+    if (!cameraTarget || !orbit || interacting.current) return;
     const azimuth = orbit.getAzimuthalAngle();
     const polar = orbit.getPolarAngle();
     const k = Math.min(delta * 5, 1);
@@ -37,6 +44,7 @@ type CubeCanvasProps = {
 
 export const CubeCanvas = ({ interactive = true, className }: CubeCanvasProps) => {
   const controlsRef = useRef<OrbitControlsImpl | null>(null);
+  const interactingRef = useRef(false);
 
   return (
     <Canvas
@@ -63,8 +71,18 @@ export const CubeCanvas = ({ interactive = true, className }: CubeCanvasProps) =
         enableDamping
         dampingFactor={0.08}
         rotateSpeed={0.9}
+        onStart={() => {
+          interactingRef.current = true;
+          // Grabbing the cube cancels any pending auto camera move so the
+          // user can look around the moment they touch it.
+          const store = useCubeStore.getState();
+          if (store.cameraTarget) store.setCameraTarget(null);
+        }}
+        onEnd={() => {
+          interactingRef.current = false;
+        }}
       />
-      <CameraRig controls={controlsRef} />
+      <CameraRig controls={controlsRef} interacting={interactingRef} />
     </Canvas>
   );
 };

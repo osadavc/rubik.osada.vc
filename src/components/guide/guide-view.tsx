@@ -2,18 +2,27 @@
 
 import { CaretLeftIcon } from "@phosphor-icons/react";
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { CubeViewport } from "@/components/cube/cube-viewport";
 import { algTokens, stateAfter } from "@/lib/cube";
 import type { Guide } from "@/lib/guides/types";
 import { guideSteps } from "@/lib/guides/types";
 import { useCubeStore } from "@/store/cube-store";
+import { ChapterRail, ContentsList } from "./chapter-nav";
 import { PlaybackControls, WhenProgramLoaded } from "./playback-controls";
 import { StepBlock } from "./step-block";
 import { useActiveStep } from "./use-active-step";
 
 const ACTIVATION_DEBOUNCE_MS = 160;
 const AUTOPLAY_DELAY_MS = 550;
+
+const DIFFICULTY_LABEL = {
+  beginner: "Beginner",
+  intermediate: "Intermediate",
+  advanced: "Advanced",
+} as const;
+
+const pad = (n: number) => String(n).padStart(2, "0");
 
 export const GuideView = ({ guide }: { guide: Guide }) => {
   const steps = useMemo(() => guideSteps(guide), [guide]);
@@ -79,53 +88,65 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
     };
   }, [activeId, steps, setupStates]);
 
-  const scrollToStep = useCallback((stepId: string, behavior: ScrollBehavior) => {
-    document
-      .querySelector<HTMLElement>(`[data-step-id="${stepId}"]`)
-      ?.scrollIntoView({ behavior, block: "center" });
-  }, []);
-
-  const advanceFrom = useCallback(
-    (stepId: string) => {
-      const index = stepIds.indexOf(stepId);
-      const nextId = stepIds[index + 1];
-      if (!nextId) return;
-      const reduced = useCubeStore.getState().reducedMotion;
-      setTimeout(
-        () => scrollToStep(nextId, reduced ? "auto" : "smooth"),
-        1300,
-      );
-    },
-    [stepIds, scrollToStep],
-  );
-
-  const activeChapter = useMemo(() => {
-    if (!activeId) return guide.chapters[0];
-    return (
-      guide.chapters.find((c) => c.steps.some((s) => s.id === activeId)) ??
-      guide.chapters[0]
+  const activeChapterIndex = useMemo(() => {
+    if (!activeId) return 0;
+    const index = guide.chapters.findIndex((c) =>
+      c.steps.some((s) => s.id === activeId),
     );
+    return index === -1 ? 0 : index;
   }, [guide, activeId]);
+
+  const progress = useMemo(() => {
+    const index = activeId ? stepIds.indexOf(activeId) : 0;
+    return (Math.max(index, 0) + 1) / stepIds.length;
+  }, [activeId, stepIds]);
 
   return (
     <div className="min-h-dvh">
-      <header className="flex h-14 items-center justify-between px-5 lg:px-10">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-1 text-sm text-zinc-500 transition hover:text-zinc-900"
-        >
-          <CaretLeftIcon size={14} weight="bold" />
-          All guides
-        </Link>
-        <span className="text-sm font-medium text-zinc-900">{guide.title}</span>
-        <span aria-hidden className="w-16" />
+      <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-[var(--background)]/85 backdrop-blur-md">
+        <div className="relative flex h-12 items-center justify-between px-4 sm:px-6 lg:h-14">
+          <Link
+            href="/"
+            className="group inline-flex items-center gap-1.5 text-[13px] font-medium text-zinc-500 transition-colors duration-150 hover:text-zinc-900"
+          >
+            <CaretLeftIcon
+              size={12}
+              weight="bold"
+              className="transition-transform duration-200 ease-out group-hover:-translate-x-0.5"
+            />
+            All guides
+          </Link>
+          {/* Keyed remount + starting-style gives a soft swap when the chapter changes. */}
+          <span
+            key={activeChapterIndex}
+            className="absolute left-1/2 max-w-[38%] -translate-x-1/2 truncate text-[13px] font-medium text-zinc-900 transition-[opacity,filter] duration-300 ease-out starting:opacity-0 starting:blur-[2px] motion-reduce:transition-none"
+          >
+            {guide.chapters[activeChapterIndex].title}
+          </span>
+          <span
+            className="text-xs tabular-nums text-zinc-400"
+            aria-label={`Chapter ${activeChapterIndex + 1} of ${guide.chapters.length}`}
+          >
+            <span className="font-medium text-zinc-900">
+              {pad(activeChapterIndex + 1)}
+            </span>
+            <span aria-hidden> / {pad(guide.chapters.length)}</span>
+          </span>
+        </div>
+        <div
+          aria-hidden
+          className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-zinc-900 transition-transform duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none"
+          style={{ transform: `scaleX(${progress})` }}
+        />
       </header>
 
+      <ChapterRail chapters={guide.chapters} activeIndex={activeChapterIndex} />
+
       <div className="mx-auto max-w-[90rem] lg:grid lg:grid-cols-2">
-        {/* Cube panel: pinned top on mobile, full-height left column on desktop. */}
-        <div className="sticky top-0 z-20 flex h-[44dvh] flex-col border-b border-zinc-200/80 bg-[var(--background)] shadow-[0_8px_24px_-20px_rgba(24,24,27,0.4)] lg:h-dvh lg:border-b-0 lg:shadow-none">
+        {/* Cube panel: pinned below the header on mobile, full-height left column on desktop. */}
+        <div className="sticky top-12 z-20 flex h-[42dvh] flex-col border-b border-zinc-200/80 bg-[var(--background)] shadow-[0_8px_24px_-20px_rgba(24,24,27,0.4)] lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:border-b-0 lg:shadow-none">
           <div className="min-h-0 flex-1">
-            <CubeViewport />
+            <CubeViewport interactive={false} />
           </div>
           <div className="hidden pb-6 lg:block">
             <PlaybackControls />
@@ -133,25 +154,50 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
         </div>
 
         {/* Lesson content. */}
-        <div className="px-5 pb-32 sm:px-8 lg:px-12 lg:pb-12">
-          {/* Chapter rail, desktop only. */}
-          <div className="sticky top-0 z-10 hidden border-b border-zinc-100 bg-[var(--background)] lg:block">
-            <div className="flex items-baseline justify-between py-3.5">
-              <span className="text-sm font-medium text-zinc-900">
-                {activeChapter.title}
-              </span>
-              <span className="text-xs tabular-nums text-zinc-400">
-                Chapter {guide.chapters.indexOf(activeChapter) + 1} of{" "}
-                {guide.chapters.length}
-              </span>
-            </div>
-          </div>
-
+        <div className="px-5 pb-28 sm:px-8 lg:px-12 lg:pb-16">
           <div className="mx-auto max-w-xl lg:mx-0 lg:max-w-[34rem]">
-            {guide.chapters.map((chapter) => (
-              <div key={chapter.id}>
-                <div className="pt-20 lg:pt-28">
-                  <h2 className="text-3xl font-semibold tracking-tight text-zinc-900">
+            {/* Guide lede: title, meta, and table of contents. */}
+            <header className="pt-14 lg:pt-20">
+              <p className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-xs font-medium text-zinc-400">
+                <span>{guide.puzzle.replace("x", "\u00d7")}</span>
+                <span aria-hidden className="text-zinc-300">
+                  &middot;
+                </span>
+                <span>{DIFFICULTY_LABEL[guide.difficulty]}</span>
+                <span aria-hidden className="text-zinc-300">
+                  &middot;
+                </span>
+                <span>About {guide.estMinutes} min</span>
+                <span aria-hidden className="text-zinc-300">
+                  &middot;
+                </span>
+                <span>{guide.chapters.length} chapters</span>
+              </p>
+              <h1 className="mt-4 text-4xl font-semibold tracking-tight text-zinc-900">
+                {guide.title}
+              </h1>
+              <p className="mt-3 max-w-md text-[15px] leading-relaxed text-zinc-500">
+                {guide.tagline}
+              </p>
+              <ContentsList chapters={guide.chapters} />
+            </header>
+
+            {guide.chapters.map((chapter, chapterIndex) => (
+              <section key={chapter.id} className="pt-16 lg:pt-24">
+                <div
+                  data-chapter-id={chapter.id}
+                  className="scroll-mt-[calc(42dvh+4rem)] lg:scroll-mt-24"
+                >
+                  <div className="flex items-center gap-4">
+                    <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+                      Chapter{" "}
+                      <span className="tabular-nums">
+                        {pad(chapterIndex + 1)}
+                      </span>
+                    </span>
+                    <span aria-hidden className="h-px flex-1 bg-zinc-200" />
+                  </div>
+                  <h2 className="mt-5 text-3xl font-semibold tracking-tight text-zinc-900">
                     {chapter.title}
                   </h2>
                   <p className="mt-2.5 text-[15px] leading-relaxed text-zinc-500">
@@ -165,18 +211,31 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
                     setupState={setupStates.get(step.id)!}
                     isActive={activeId === step.id}
                     registerStep={registerStep}
-                    onSolved={advanceFrom}
                   />
                 ))}
-              </div>
+              </section>
             ))}
-            <footer className="flex items-center justify-between border-t border-zinc-200 py-10">
+
+            <footer className="mt-8 flex items-center justify-between border-t border-zinc-200 py-10">
               <Link
                 href="/"
-                className="text-sm text-zinc-500 transition hover:text-zinc-900"
+                className="group inline-flex items-center gap-1.5 text-sm font-medium text-zinc-500 transition-colors duration-150 hover:text-zinc-900"
               >
-                Back to all guides
+                <CaretLeftIcon
+                  size={12}
+                  weight="bold"
+                  className="transition-transform duration-200 ease-out group-hover:-translate-x-0.5"
+                />
+                All guides
               </Link>
+              <a
+                href="https://osada.vc"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-xs text-zinc-400 transition-colors duration-150 hover:text-zinc-900"
+              >
+                osada.vc
+              </a>
             </footer>
           </div>
         </div>
