@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Geist_Mono, Instrument_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -21,6 +21,11 @@ export const metadata: Metadata = {
     "Interactive Rubik's Cube guides with a 3D cube you can turn, scrub, and practice on.",
 };
 
+export const viewport: Viewport = {
+  colorScheme: "light",
+  themeColor: "#fafafa",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,7 +34,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${instrumentSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${instrumentSans.variable} ${geistMono.variable} h-full bg-[var(--background)] text-[var(--foreground)] antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
