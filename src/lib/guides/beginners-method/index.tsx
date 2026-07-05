@@ -1,4 +1,12 @@
-import { M, ScrambleChip, Swatch, Tip } from "@/components/guide/content-blocks";
+import {
+  Kbd,
+  M,
+  PlayChip,
+  ScrambleChip,
+  Swatch,
+  Tip,
+  TryMove,
+} from "@/components/guide/content-blocks";
 import { TopView } from "@/components/guide/top-view";
 import {
   firstLayerSolved,
@@ -79,6 +87,7 @@ export const beginnersMethod: Guide = {
           title: "You solve layers, not faces",
           camera: DEFAULT_CAM,
           highlight: topLayer,
+          freePlay: true,
           content: (
             <>
               <p>
@@ -105,24 +114,15 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           highlight: centersOnly,
           spotlight: centersOnly,
-          demo: "R L' U D' F B'",
-          demoNotes: [
-            "Watch the six glowing center tiles: everything spins around them, but they never trade places.",
-            null,
-            null,
-            null,
-            null,
-            null,
-          ],
-          pace: 0.6,
           content: (
             <>
               <p>
                 Each flat side is a face, and the single tile in the middle of a
                 face is a <strong>center</strong>. Centers are fixed to the
-                core, so they never move relative to each other. Play the demo
-                below: every layer spins, yet the six centers stay put.
+                core, so they never move relative to each other. Press play and
+                watch: every layer spins, yet the six glowing centers stay put.
               </p>
+              <PlayChip alg="R L' U D' F B'" label="Spin every face" pace={0.6} />
               <p>
                 That means the center tells you what color its face will be
                 when solved. The pairs are always opposite each other:{" "}
@@ -179,11 +179,7 @@ export const beginnersMethod: Guide = {
           id: "notation-turn",
           title: "One letter, one quarter turn",
           camera: DEFAULT_CAM,
-          demo: "U",
-          demoNotes: [
-            "The top face, one quarter turn clockwise — clockwise as if you were looking straight down at it.",
-          ],
-          pace: 0.5,
+          freePlay: true,
           content: (
             <>
               <p>
@@ -196,23 +192,15 @@ export const beginnersMethod: Guide = {
               </p>
               <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
                 {FACE_KEY.map(([letter, meaning]) => (
-                  <div
-                    key={letter}
-                    className="flex items-center gap-3 rounded-xl border border-zinc-200 bg-white px-3 py-2.5"
-                  >
-                    <span className="font-mono text-2xl font-semibold text-zinc-900">
-                      {letter}
-                    </span>
-                    <span className="text-xs leading-tight text-zinc-500">
-                      {meaning}
-                    </span>
-                  </div>
+                  <TryMove key={letter} token={letter} label={meaning} />
                 ))}
               </div>
               <p>
-                The demo below plays <M>U</M>, one clockwise turn of the up
-                face. Notice how the turning layer flashes on the cube — every
-                move you meet from here on will announce itself the same way.
+                These cards are live: <strong>tap one</strong> and that face
+                turns on the cube — or press the same letter on your{" "}
+                <strong>keyboard</strong>: <Kbd>U</Kbd> <Kbd>D</Kbd>{" "}
+                <Kbd>L</Kbd> <Kbd>R</Kbd> <Kbd>F</Kbd> <Kbd>B</Kbd>. Four turns
+                of the same face bring the cube back to where it started.
               </p>
             </>
           ),
@@ -221,13 +209,7 @@ export const beginnersMethod: Guide = {
           id: "notation-prime",
           title: "Primes and doubles",
           camera: DEFAULT_CAM,
-          demo: "U U' U2",
-          demoNotes: [
-            "A plain letter: quarter turn clockwise.",
-            "An apostrophe — read \u201cU prime\u201d — reverses it: quarter turn counterclockwise.",
-            "A 2 means turn the face twice. Direction doesn't matter for a half turn.",
-          ],
-          pace: 0.55,
+          freePlay: true,
           content: (
             <>
               <p>
@@ -237,11 +219,21 @@ export const beginnersMethod: Guide = {
                 twice. Every move card in this guide carries a small arrow so
                 you always know the direction at a glance.
               </p>
+              <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
+                <TryMove token="U" label="quarter turn clockwise" />
+                <TryMove token="U'" label={'counterclockwise \u2014 "U prime"'} />
+                <TryMove token="U2" label="half turn, twice around" />
+              </div>
+              <p>
+                Feel the difference: tap <M>U</M> then <M>{"U'"}</M> and the
+                cube is back where it began — a prime undoes its plain twin.
+                Two taps of <M>U2</M> do the same. On a keyboard, hold{" "}
+                <Kbd>Shift</Kbd> with a face letter for the prime turn.
+              </p>
               <p>
                 A sequence of moves in a specific order is called an{" "}
                 <strong>algorithm</strong>. You will learn only a handful of
-                short ones, and each will be laid out move by move, like the
-                one below.
+                short ones, each laid out move by move on cards like these.
               </p>
             </>
           ),
@@ -257,7 +249,7 @@ export const beginnersMethod: Guide = {
             {
               setup: "",
               label: "Any turn",
-              hint: "Press on any colored tile, then drag across it in the direction you want that layer to spin.",
+              hint: "Press on any colored tile, then drag across it in the direction you want that layer to spin. Or just press a letter key, like R or U.",
             },
           ],
           content: (
@@ -282,7 +274,7 @@ export const beginnersMethod: Guide = {
       title: "The daisy",
       summary:
         "Stage one of layer one. Four white petals around the yellow center, an easy landmark to build from.",
-      outcome: { setup: DAISY_SETUP, caption: "The daisy" },
+      outcome: { setup: SETUPS.daisyMixed, caption: "The daisy" },
       steps: [
         {
           id: "daisy-hold",
@@ -309,16 +301,20 @@ export const beginnersMethod: Guide = {
           id: "daisy-goal",
           title: "The goal",
           camera: DEFAULT_CAM,
-          setup: SETUPS.daisy,
+          setup: SETUPS.daisyMixed,
           highlight: whiteEdgesFocus,
           spotlight: whiteEdges,
           content: (
             <>
               <p>
                 This is a finished daisy: four white edge tiles around the
-                yellow center, like petals — they are glowing on the cube. The
-                petals&apos; side colors do not need to match anything yet. Any
-                white edge tile pointing up counts.
+                yellow center, like petals — they are glowing on the cube.
+              </p>
+              <p>
+                Look closely at their sides: <strong>none</strong> of the side
+                colors line up with the centers below them, and that is
+                completely fine. A daisy only cares that white points up.
+                Matching the sides comes later, in the cross stage.
               </p>
             </>
           ),
@@ -327,7 +323,7 @@ export const beginnersMethod: Guide = {
           id: "daisy-top",
           title: "Whites already on top stay put",
           camera: DEFAULT_CAM,
-          setup: "x2 F2 B2",
+          setup: SETUPS.daisyTopCase,
           highlight: whiteEdgesFocus,
           spotlight: whiteEdgesOnTop,
           content: (
@@ -346,7 +342,7 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.daisyMiddleCase,
           highlight: whiteEdgesFocus,
-          spotlight: piece("white", "blue"),
+          spotlight: piece("white", "orange"),
           demo: "F'",
           demoNotes: [
             "One turn of the front face lifts the glowing white edge from the middle layer into the top.",
@@ -354,9 +350,10 @@ export const beginnersMethod: Guide = {
           content: (
             <>
               <p>
-                Next, scan the middle layer. This cube has a white edge tile on
-                the side of the front face — it is glowing. Turn that face so
-                the white edge rises into the top layer. Watch it travel.
+                Next, scan the middle layer. This cube has a white edge sitting
+                in the middle layer, its white tile facing sideways — it is
+                glowing. Turn the front face so the edge rises into the top
+                layer. Watch it travel.
               </p>
             </>
           ),
@@ -396,7 +393,7 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.daisyBottomCase,
           highlight: whiteEdgesFocus,
-          spotlight: piece("white", "blue"),
+          spotlight: piece("white", "orange"),
           demo: "F2",
           demoNotes: [
             "A half turn carries the white edge from the bottom straight to the top, landing white side up.",
@@ -417,7 +414,7 @@ export const beginnersMethod: Guide = {
           camera: DEFAULT_CAM,
           setup: SETUPS.daisyFlipCase,
           highlight: whiteEdgesFocus,
-          spotlight: piece("white", "blue"),
+          spotlight: piece("white", "orange"),
           demo: DAISY_FLIP,
           demoNotes: [
             "The flipped edge drops out of the top layer, down into the middle.",
@@ -448,7 +445,7 @@ export const beginnersMethod: Guide = {
             {
               setup: SETUPS.daisyPractice,
               label: "One to go",
-              hint: "The last white edge sits at the bottom, but its landing slot is off to the side. Spin the top face first so the empty slot moves over it, then turn twice.",
+              hint: "The last white edge sits at the bottom, but its landing slot is off to the side. Spin the top face until the empty slot is over it, then turn twice.",
               solution: DEMOS.daisyPracticeSolution,
             },
             {
@@ -468,7 +465,8 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 Time to do it yourself. Three scrambles, from easy to sneaky.
-                The cube is yours — drag faces to turn them.
+                The cube is yours — drag faces to turn them. Remember: any four
+                white petals count, no matter what their side colors do.
               </p>
             </>
           ),
@@ -1542,6 +1540,7 @@ export const beginnersMethod: Guide = {
           id: "solved-done",
           title: "You solved the Rubik's Cube",
           camera: DEFAULT_CAM,
+          freePlay: true,
           content: (
             <>
               <p>
@@ -1551,7 +1550,8 @@ export const beginnersMethod: Guide = {
               </p>
               <p>
                 Scramble the cube and run the journey end to end — this time
-                with nothing dimmed and no help lit up.
+                with nothing dimmed and no help lit up. The cube is all yours
+                here: drag faces, or turn with the letter keys.
               </p>
               <ScrambleChip />
               <p>

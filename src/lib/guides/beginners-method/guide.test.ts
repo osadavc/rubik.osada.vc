@@ -1,7 +1,9 @@
 import { describe, expect, test } from "bun:test";
 import {
   applyAlg,
+  centerColorOf,
   cubiePosition,
+  faceWithCenter,
   findPiece,
   firstLayerSolved,
   getFaces,
@@ -22,6 +24,7 @@ import {
   yellowCornersPositioned,
   yellowFaceComplete,
 } from "@/lib/cube";
+import type { CubeState } from "@/lib/cube";
 import { beginnersMethod } from "./index";
 import { guideSteps } from "../types";
 import {
@@ -116,7 +119,44 @@ describe("guide data integrity", () => {
   });
 });
 
+/** Petals on top whose side tile happens to match the center below it. */
+const matchedPetalCount = (state: CubeState): number => {
+  const up = faceWithCenter(state, "yellow");
+  let matched = 0;
+  for (const cubie of state) {
+    if (pieceTypeOf(cubie) !== "edge") continue;
+    const colors = pieceColors(cubie);
+    if (!colors.includes("white")) continue;
+    if (stickerFace(state, cubie, "white") !== up) continue;
+    const other = colors.find((c) => c !== "white")!;
+    if (centerColorOf(state, stickerFace(state, cubie, other)) === other) matched++;
+  }
+  return matched;
+};
+
 describe("daisy stage", () => {
+  test("teaching states never show petals matched to their centers", () => {
+    // The daisy must not imply that side colors matter; matching is taught
+    // later, in the cross stage.
+    const teachingSetups = [
+      SETUPS.daisyMixed,
+      SETUPS.daisyTopCase,
+      SETUPS.daisyMiddleCase,
+      SETUPS.daisyBumpCase,
+      SETUPS.daisyBottomCase,
+      SETUPS.daisyFlipCase,
+      SETUPS.daisyPractice,
+      "x2 R2 B2 U'",
+    ];
+    for (const setup of teachingSetups) {
+      expect(matchedPetalCount(stateAfter(setup))).toBe(0);
+    }
+  });
+
+  test("mixed daisy is a complete daisy", () => {
+    expect(hasDaisy(stateAfter(SETUPS.daisyMixed))).toBe(true);
+  });
+
   test("middle layer case rises into the daisy", () => {
     expect(hasDaisy(applyAlg(stateAfter(SETUPS.daisyMiddleCase), "F'"))).toBe(true);
   });

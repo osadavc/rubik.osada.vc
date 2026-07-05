@@ -17,6 +17,13 @@ export const EDGE_PLL_PRIME = "F2 U' L R' F2 L' R U' F2";
 /** A daisy straight from solved: yellow up, four white petals. */
 export const DAISY_SETUP = "x2 F2 R2 B2 L2";
 
+/**
+ * The honest daisy: top layer turned a quarter, so no petal's side color
+ * matches the center below it. Used for daisy-stage examples to avoid
+ * implying that petals must match (they must not until the cross stage).
+ */
+export const DAISY_MIXED = `${DAISY_SETUP} U'`;
+
 export const INV_YELLOW_CROSS = invertAlg(YELLOW_CROSS);
 export const INV_SUNE = invertAlg(SUNE);
 export const INV_CORNER_PLL = invertAlg(CORNER_PLL);
@@ -28,11 +35,13 @@ export const INV_INSERT_LEFT = invertAlg(INSERT_LEFT);
 /** Case setups reused by steps, diagrams and tests. */
 export const SETUPS = {
   daisy: DAISY_SETUP,
-  daisyMiddleCase: "x2 R2 B2 L2 F'",
+  daisyMixed: DAISY_MIXED,
+  daisyTopCase: "x2 F2 B2 U",
+  daisyMiddleCase: `${DAISY_MIXED} F`,
   daisyBumpCase: "x2 R2 B2 L2 U'",
-  daisyBottomCase: "x2 R2 B2 L2",
-  daisyFlipCase: `${DAISY_SETUP} ${invertAlg(DAISY_FLIP)}`,
-  daisyPractice: "x2 F2 B2 L2 D'",
+  daisyBottomCase: `${DAISY_MIXED} F2`,
+  daisyFlipCase: `${DAISY_MIXED} ${invertAlg(DAISY_FLIP)}`,
+  daisyPractice: `${DAISY_MIXED} R2 U2`,
   crossMismatch: `${DAISY_SETUP} U`,
   crossPractice: `${DAISY_SETUP} U2`,
   crossDone: "R' D' R L D L' D2",
@@ -64,7 +73,7 @@ export const SETUPS = {
 
 /** Demos and practice solutions that involve repetition or re-holds. */
 export const DEMOS = {
-  daisyPracticeSolution: "U F2",
+  daisyPracticeSolution: "U2 R2",
   crossAround: "U' F2 R2 B2 L2",
   crossPracticeSolution: "U2 F2 R2 B2 L2",
   cornerEscape: `y' ${CORNER_ESCAPE}`,
