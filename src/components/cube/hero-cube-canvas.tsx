@@ -158,10 +158,10 @@ const HeroCubeCanvas = ({ animate }: { animate: boolean }) => (
     camera={{ position: [6.8, 5.6, 8.3], fov: 30 }}
     gl={{ antialias: true, alpha: true }}
   >
-    <ambientLight intensity={1.1} />
-    <directionalLight position={[6, 9, 7]} intensity={1.5} />
-    <directionalLight position={[-7, -3, -6]} intensity={0.5} />
-    <directionalLight position={[-4, 6, -8]} intensity={0.6} />
+    <ambientLight intensity={1.35} />
+    <directionalLight position={[6, 9, 7]} intensity={1.15} />
+    <directionalLight position={[-7, -3, -6]} intensity={0.45} />
+    <directionalLight position={[-4, 6, -8]} intensity={0.5} />
     <SolvingCube animate={animate} />
     <OrbitControls
       enablePan={false}

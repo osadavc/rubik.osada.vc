@@ -4,7 +4,7 @@ import { OrbitControls } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useRef } from "react";
 import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
-import { useCubeStore } from "@/store/cube-store";
+import { liveCamera, useCubeStore } from "@/store/cube-store";
 import { CubeModel } from "./cube-model";
 
 const CameraRig = ({
@@ -17,6 +17,7 @@ const CameraRig = ({
   useFrame((_, delta) => {
     const { cameraTarget, setCameraTarget } = useCubeStore.getState();
     const orbit = controls.current;
+    if (orbit) liveCamera.azimuth = orbit.getAzimuthalAngle();
     // Never fight the user: an in-progress drag always wins over auto-reorientation.
     if (!cameraTarget || !orbit || interacting.current) return;
     const azimuth = orbit.getAzimuthalAngle();
@@ -54,10 +55,11 @@ export const CubeCanvas = ({ interactive = true, className }: CubeCanvasProps) =
       gl={{ antialias: true, alpha: true }}
       style={{ touchAction: "none" }}
     >
-      <ambientLight intensity={1.1} />
-      <directionalLight position={[6, 9, 7]} intensity={1.5} />
-      <directionalLight position={[-7, -3, -6]} intensity={0.5} />
-      <directionalLight position={[-4, 6, -8]} intensity={0.6} />
+      {/* High ambient, soft key: keeps sticker hues true on shaded faces. */}
+      <ambientLight intensity={1.35} />
+      <directionalLight position={[6, 9, 7]} intensity={1.15} />
+      <directionalLight position={[-7, -3, -6]} intensity={0.45} />
+      <directionalLight position={[-4, 6, -8]} intensity={0.5} />
       <CubeModel
         interactive={interactive}
         setControlsEnabled={(enabled) => {

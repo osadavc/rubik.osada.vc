@@ -61,7 +61,7 @@ const STATE_CLASS: Record<TokenState, string> = {
   upcoming: "border-zinc-200 bg-white text-zinc-800",
 };
 
-const DirectionGlyph = ({
+export const DirectionGlyph = ({
   token,
   className,
 }: {
