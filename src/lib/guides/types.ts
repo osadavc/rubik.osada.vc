@@ -35,6 +35,12 @@ export type GuideStep = {
   highlight?: (sticker: Sticker) => boolean;
   /** Pieces to track with a pulsing glow: "watch this one travel". */
   spotlight?: (sticker: Sticker) => boolean;
+  /**
+   * Allow direct turns (drag, keyboard) while this step is active, outside a
+   * practice session. Everywhere else, the cube only turns when the lesson
+   * asks for it.
+   */
+  freePlay?: boolean;
   interaction?: StepInteraction;
   /** Target state for execute steps. */
   goal?: (state: CubeState) => boolean;

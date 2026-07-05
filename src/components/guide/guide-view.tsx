@@ -10,6 +10,8 @@ import { guideSteps } from "@/lib/guides/types";
 import { useCubeStore } from "@/store/cube-store";
 import { ChapterRail, ContentsList } from "./chapter-nav";
 import { CubeSnapshot } from "./cube-snapshot";
+import { IntroDialog } from "./intro-dialog";
+import { KeyboardHint, LockNudge, useKeyboardTurns } from "./keyboard-turns";
 import { StepBlock } from "./step-block";
 import { useActiveStep } from "./use-active-step";
 
@@ -64,8 +66,24 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
     () => new Map(steps.map((step) => [step.id, stateAfter(step.setup ?? "")])),
     [steps]
   );
+  // What the cube shows when a step scrolls into view. Practice steps preview
+  // the finished segment until "Start practicing" swaps in the scramble.
+  const previewStates = useMemo(
+    () =>
+      new Map(
+        steps.map((step) => {
+          const drill = step.drills?.[0];
+          if (step.interaction === "execute" && drill?.solution) {
+            return [step.id, stateAfter(`${drill.setup} ${drill.solution}`)];
+          }
+          return [step.id, stateAfter(step.setup ?? "")];
+        })
+      ),
+    [steps]
+  );
   const { activeId, registerStep } = useActiveStep(stepIds);
   const practicing = useCubeStore((s) => s.practice !== null);
+  useKeyboardTurns();
 
   const activationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -75,7 +93,7 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
     window.history.replaceState(
       null,
       "",
-      `${window.location.pathname}${window.location.search}`,
+      `${window.location.pathname}${window.location.search}`
     );
   }, []);
 
@@ -88,14 +106,15 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
 
     activationTimer.current = setTimeout(() => {
       const step = steps.find((s) => s.id === activeId);
-      const setup = setupStates.get(activeId);
-      if (!step || !setup) return;
+      const preview = previewStates.get(activeId);
+      if (!step || !preview) return;
       const store = useCubeStore.getState();
 
-      store.snapTo(setup);
+      store.snapTo(preview);
       store.setHighlight(step.highlight ?? null);
       store.setSpotlight(step.spotlight ?? null);
       store.setCameraTarget(step.camera ?? null);
+      store.setTurnLocked(!step.freePlay);
 
       if (step.demo) {
         store.loadProgram(step.id, step.demo, {
@@ -110,12 +129,12 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
     return () => {
       if (activationTimer.current) clearTimeout(activationTimer.current);
     };
-  }, [activeId, steps, setupStates, practicing]);
+  }, [activeId, steps, previewStates, practicing]);
 
   const activeChapterIndex = useMemo(() => {
     if (!activeId) return 0;
     const index = guide.chapters.findIndex((c) =>
-      c.steps.some((s) => s.id === activeId),
+      c.steps.some((s) => s.id === activeId)
     );
     return index === -1 ? 0 : index;
   }, [guide, activeId]);
@@ -132,6 +151,7 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
 
   return (
     <div className="min-h-dvh">
+      <IntroDialog />
       <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-[var(--background)]/85 backdrop-blur-md">
         <div className="relative flex h-12 items-center justify-between px-4 sm:px-6 lg:h-14">
           <Link
@@ -154,7 +174,9 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
           </span>
           <span
             className="text-xs tabular-nums text-zinc-400"
-            aria-label={`Chapter ${activeChapterIndex + 1} of ${guide.chapters.length}`}
+            aria-label={`Chapter ${activeChapterIndex + 1} of ${
+              guide.chapters.length
+            }`}
           >
             <span className="font-medium text-zinc-900">
               {pad(activeChapterIndex + 1)}
@@ -177,6 +199,11 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
           <div className="relative min-h-0 flex-1">
             <CubeViewport interactive />
             <PracticeHud />
+            <LockNudge />
+          </div>
+          {/* Fixed-height dock so the canvas never shifts when the hint toggles. */}
+          <div className="hidden h-9 items-center justify-center px-4 lg:flex">
+            <KeyboardHint />
           </div>
         </div>
 

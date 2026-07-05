@@ -58,3 +58,20 @@ html::-webkit-scrollbar-thumb:hover {
   background: #e4e4e7;
   color: #18181b;
 }
+
+/* Refused-turn hint pill: fade in, hold, fade out, then stay hidden. */
+@keyframes lock-nudge {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  8%,
+  78% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0);
+  }
+}

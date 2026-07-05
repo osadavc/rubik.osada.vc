@@ -7,6 +7,7 @@ import {
   createSolvedState,
   invertMove,
   parseAlg,
+  parseMove,
   randomScramble,
 } from "@/lib/cube";
 import type { CubeState, Move, Sticker } from "@/lib/cube";
@@ -51,6 +52,32 @@ export type PracticeSession = {
 
 export type CameraPose = { azimuth: number; polar: number };
 
+/**
+ * Live camera azimuth in radians, written by the canvas every frame and read
+ * synchronously by input handlers (keyboard turns map "F" to whatever face
+ * is toward the viewer). Deliberately outside zustand: it changes per frame
+ * and must never trigger renders.
+ */
+export const liveCamera = { azimuth: 0.68 };
+
+/** Side faces in camera-orbit order: each quarter turn of azimuth shifts by one. */
+const VIEW_RING = ["F", "R", "B", "L"] as const;
+
+/**
+ * Parse a token like "F" / "R'" / "U2" with its face taken from the viewer's
+ * frame: "F" is always the side currently facing the viewer, however the
+ * cube has been orbited. U and D stay world up and down.
+ */
+export const viewAdjustedMove = (token: string): Move => {
+  const match = /^([UDLRFB])(2|')?$/.exec(token);
+  if (!match) return parseMove(token);
+  const idx = VIEW_RING.indexOf(match[1] as (typeof VIEW_RING)[number]);
+  if (idx === -1) return parseMove(token);
+  const quarter = Math.round(liveCamera.azimuth / (Math.PI / 2));
+  const letter = VIEW_RING[(((idx + quarter) % 4) + 4) % 4];
+  return parseMove(`${letter}${match[2] ?? ""}`);
+};
+
 type CubeStore = {
   state: CubeState;
   queue: QueuedMove[];
@@ -67,6 +94,14 @@ type CubeStore = {
   cameraTarget: CameraPose | null;
   /** Bumped on every instant state replacement so views can crossfade. */
   snapId: number;
+  /**
+   * When true, direct turns (drag, keyboard) are refused unless a practice
+   * session is active. Set per step by the guide so learners can only turn
+   * the cube where turning is part of the lesson.
+   */
+  turnLocked: boolean;
+  /** Timestamp of the last refused turn attempt, drives the hint pill. */
+  lockNudgeAt: number | null;
 
   startNextAnim: () => void;
   completeAnim: () => void;
@@ -97,6 +132,11 @@ type CubeStore = {
   setHighlight: (fn: HighlightFn | null) => void;
   setSpotlight: (fn: HighlightFn | null) => void;
   setCameraTarget: (pose: CameraPose | null) => void;
+  setTurnLocked: (locked: boolean) => void;
+  /** True when a direct turn is currently allowed. */
+  canTurn: () => boolean;
+  /** Record a refused turn attempt so the UI can explain the lock. */
+  nudgeLock: () => void;
 };
 
 const BASE_QUARTER_MS = 260;
@@ -121,6 +161,8 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
   celebrateAt: null,
   cameraTarget: null,
   snapId: 0,
+  turnLocked: false,
+  lockNudgeAt: null,
 
   startNextAnim: () => {
     const { anim, queue } = get();
@@ -256,7 +298,10 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
     const { program, practice, speed, reducedMotion, queue } = get();
     // Keep interaction responsive: never build a long backlog from fast drags.
     if (queue.length > 2) return;
-    if (program && (program.status === "playing" || program.cursor > 0)) {
+    // Any user turn taints a loaded program, even one that has not started
+    // yet: play must never run the moves from a tampered state, so playback
+    // controls treat a dirty program as "reset to the base state first".
+    if (program) {
       set({
         program: {
           ...program,
@@ -337,6 +382,12 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
   setHighlight: (fn) => set({ highlight: fn }),
   setSpotlight: (fn) => set({ spotlight: fn }),
   setCameraTarget: (pose) => set({ cameraTarget: pose }),
+  setTurnLocked: (locked) => set({ turnLocked: locked }),
+  canTurn: () => {
+    const { turnLocked, practice } = get();
+    return practice !== null || !turnLocked;
+  },
+  nudgeLock: () => set({ lockNudgeAt: performance.now() }),
 }));
 
 type Set = (

@@ -45,14 +45,6 @@ type DragGesture = {
   consumed: boolean;
 };
 
-/** One turning layer briefly lighting up, so the eye catches what moved. */
-type LayerFlash = {
-  cubieIds: Set<number>;
-  startedAt: number;
-  duration: number;
-};
-
-const FLASH_TAIL_MS = 340;
 const CELEBRATE_MS = 1400;
 const WHITE = new THREE.Color("#fffdf4");
 
@@ -68,8 +60,6 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
   const targetColors = useRef(new Map<string, THREE.Color>());
   const spotKeys = useRef(new Set<string>());
   const cubieOfKey = useRef(new Map<string, number>());
-  const flashes = useRef<LayerFlash[]>([]);
-  const seenAnimStart = useRef<number>(-1);
   const gesture = useRef<DragGesture | null>(null);
   const { camera, gl, size } = useThree();
 
@@ -128,27 +118,6 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
     const now = performance.now();
     const anim = useCubeStore.getState().anim;
 
-    // Register a layer flash the first frame a new animation appears.
-    if (
-      anim &&
-      anim.startedAt !== seenAnimStart.current &&
-      anim.move.layer !== null &&
-      anim.source !== "system" &&
-      !store.reducedMotion
-    ) {
-      seenAnimStart.current = anim.startedAt;
-      const ids = new Set<number>();
-      for (const cubie of store.state) {
-        if (cubiePosition(cubie)[anim.move.axis] === anim.move.layer) ids.add(cubie.id);
-      }
-      flashes.current.push({
-        cubieIds: ids,
-        startedAt: anim.startedAt,
-        duration: anim.duration + FLASH_TAIL_MS,
-      });
-    }
-    flashes.current = flashes.current.filter((f) => now - f.startedAt < f.duration);
-
     let animQuat: THREE.Quaternion | null = null;
     let animMove: Move | null = null;
     if (anim) {
@@ -189,16 +158,6 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
       group.position.copy(vec);
     }
 
-    // Per-cubie flash strength: rises instantly with the turn, fades on a tail.
-    const flashStrength = new Map<number, number>();
-    for (const flash of flashes.current) {
-      const t = (now - flash.startedAt) / flash.duration;
-      const strength = 0.16 * Math.sin(Math.min(t, 1) * Math.PI);
-      for (const id of flash.cubieIds) {
-        flashStrength.set(id, Math.max(flashStrength.get(id) ?? 0, strength));
-      }
-    }
-
     // Spotlight pulse: slow breathing glow, steady under reduced motion.
     const pulse = store.reducedMotion
       ? 0.3
@@ -223,13 +182,6 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
         glow = 1;
       }
       const cubieId = cubieOfKey.current.get(key);
-      const flash = cubieId !== undefined ? (flashStrength.get(cubieId) ?? 0) : 0;
-      if (flash > 0) {
-        glowColor.r += WHITE.r * flash;
-        glowColor.g += WHITE.g * flash;
-        glowColor.b += WHITE.b * flash;
-        glow = 1;
-      }
       if (celebrating && cubieId !== undefined) {
         const group = groups.current.get(cubieId);
         if (group && target) {
@@ -329,6 +281,12 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
     <group
       onPointerDown={(event) => {
         if (!interactive) return;
+        const store = useCubeStore.getState();
+        if (!store.canTurn()) {
+          // Let the drag fall through to orbiting, and explain the lock.
+          store.nudgeLock();
+          return;
+        }
         const hit = event.intersections.find((i) => i.object.userData?.sticker);
         const object = hit?.object;
         if (!hit || !object) return;
