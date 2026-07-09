@@ -2,8 +2,8 @@ import * as THREE from "three";
 
 export const CUBIE_SIZE = 1.0;
 export const CUBIE_SPACING = 1.0;
-export const STICKER_SIZE = 0.86;
-export const STICKER_RADIUS = 0.13;
+const STICKER_SIZE = 0.86;
+const STICKER_RADIUS = 0.13;
 /** Distance from cubie center to sticker surface. */
 export const STICKER_OFFSET = CUBIE_SIZE / 2 + 0.004;
 

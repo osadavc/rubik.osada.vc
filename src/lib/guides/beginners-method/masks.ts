@@ -47,14 +47,6 @@ export const whiteEdges = (s: Sticker): boolean =>
 export const whiteEdgesOnTop = (s: Sticker): boolean =>
   whiteEdges(s) && s.position[1] === 1;
 
-export const whiteCorners = (s: Sticker): boolean =>
-  s.pieceType === "corner" && s.pieceColors.includes("white");
-
-export const middleEdges = (s: Sticker): boolean =>
-  s.pieceType === "edge" &&
-  !s.pieceColors.includes("white") &&
-  !s.pieceColors.includes("yellow");
-
 export const yellowEdges = (s: Sticker): boolean =>
   s.pieceType === "edge" && s.pieceColors.includes("yellow");
 

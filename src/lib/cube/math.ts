@@ -29,10 +29,6 @@ export const matEquals = (a: Mat3, b: Mat3): boolean => {
   }
   return true;
 };
-
-export const vecEquals = (a: Vec3, b: Vec3): boolean =>
-  a[0] === b[0] && a[1] === b[1] && a[2] === b[2];
-
 /**
  * Rotation by `q` quarter turns about the +axis, right-hand rule.
  * Exact integer matrices, no trigonometry.

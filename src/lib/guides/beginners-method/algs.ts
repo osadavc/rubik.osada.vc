@@ -4,7 +4,7 @@ import { invertAlg } from "@/lib/cube";
 export const DAISY_FLIP = "R' U F'";
 export const CORNER_RIGHT = "D' R' D R";
 export const CORNER_LEFT = "D L D' L'";
-export const CORNER_ESCAPE = "R' D' R";
+const CORNER_ESCAPE = "R' D' R";
 export const CORNER_DOWN_FIX = "F D' F' D2";
 export const INSERT_RIGHT = "U R U' R' U' F' U F";
 export const INSERT_LEFT = "U' L' U L U F U' F'";
@@ -22,13 +22,13 @@ export const DAISY_SETUP = "x2 F2 R2 B2 L2";
  * matches the center below it. Used for daisy-stage examples to avoid
  * implying that petals must match (they must not until the cross stage).
  */
-export const DAISY_MIXED = `${DAISY_SETUP} U'`;
+const DAISY_MIXED = `${DAISY_SETUP} U'`;
 
-export const INV_YELLOW_CROSS = invertAlg(YELLOW_CROSS);
-export const INV_SUNE = invertAlg(SUNE);
-export const INV_CORNER_PLL = invertAlg(CORNER_PLL);
-export const INV_EDGE_PLL = invertAlg(EDGE_PLL);
-export const INV_EDGE_PLL_PRIME = invertAlg(EDGE_PLL_PRIME);
+const INV_YELLOW_CROSS = invertAlg(YELLOW_CROSS);
+const INV_SUNE = invertAlg(SUNE);
+const INV_CORNER_PLL = invertAlg(CORNER_PLL);
+const INV_EDGE_PLL = invertAlg(EDGE_PLL);
+const INV_EDGE_PLL_PRIME = invertAlg(EDGE_PLL_PRIME);
 export const INV_INSERT_RIGHT = invertAlg(INSERT_RIGHT);
 export const INV_INSERT_LEFT = invertAlg(INSERT_LEFT);
 

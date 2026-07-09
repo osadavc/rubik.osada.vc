@@ -12,9 +12,9 @@ import {
 } from "@/lib/cube";
 import type { CubeState, Move, Sticker } from "@/lib/cube";
 
-export type HighlightFn = (sticker: Sticker) => boolean;
+type HighlightFn = (sticker: Sticker) => boolean;
 
-export type MoveSource = "user" | "program" | "program-back" | "system";
+type MoveSource = "user" | "program" | "program-back" | "system";
 
 export type QueuedMove = {
   move: Move;
@@ -23,11 +23,11 @@ export type QueuedMove = {
   duration: number;
 };
 
-export type ActiveAnim = QueuedMove & { startedAt: number };
+type ActiveAnim = QueuedMove & { startedAt: number };
 
-export type PlaybackStatus = "idle" | "playing" | "paused";
+type PlaybackStatus = "idle" | "playing" | "paused";
 
-export type Program = {
+type Program = {
   id: string;
   moves: Move[];
   tokens: string[];
@@ -40,7 +40,7 @@ export type Program = {
   pace: number;
 };
 
-export type PracticeSession = {
+type PracticeSession = {
   stepId: string;
   drillIndex: number;
   status: "active" | "solved";
@@ -50,7 +50,7 @@ export type PracticeSession = {
   assisted: boolean;
 };
 
-export type CameraPose = { azimuth: number; polar: number };
+type CameraPose = { azimuth: number; polar: number };
 
 /**
  * Live camera azimuth in radians, written by the canvas every frame and read

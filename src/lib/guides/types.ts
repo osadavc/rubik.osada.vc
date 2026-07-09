@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
 import type { CubeState, Sticker } from "@/lib/cube";
 
-export type CameraPose = { azimuth: number; polar: number };
+type CameraPose = { azimuth: number; polar: number };
 
-export type StepInteraction = "watch" | "execute";
+type StepInteraction = "watch" | "execute";
 
 /** One scramble variant for a practice step. */
 export type PracticeDrill = {
@@ -80,9 +80,6 @@ export type CatalogEntry = {
   estMinutes: number;
   available: boolean;
 };
-
-export const guideStepCount = (guide: Guide): number =>
-  guide.chapters.reduce((sum, chapter) => sum + chapter.steps.length, 0);
 
 export const guideSteps = (guide: Guide): GuideStep[] =>
   guide.chapters.flatMap((chapter) => chapter.steps);

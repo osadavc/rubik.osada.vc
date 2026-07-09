@@ -75,7 +75,7 @@ export const stickerFace = (state: CubeState, cubie: Cubie, color: ColorName): F
 };
 
 /** True when every sticker of the piece sits on the face matching its color's center. */
-export const pieceIsPlacedAndOriented = (state: CubeState, cubie: Cubie): boolean => {
+const pieceIsPlacedAndOriented = (state: CubeState, cubie: Cubie): boolean => {
   const colors = pieceColors(cubie);
   return colors.every((color) => stickerFace(state, cubie, color) === faceWithCenter(state, color));
 };

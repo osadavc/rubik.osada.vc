@@ -15,7 +15,7 @@ type ParsedToken = {
   regrip: boolean;
 };
 
-export const parseToken = (token: string): ParsedToken => {
+const parseToken = (token: string): ParsedToken => {
   const match = /^([RLUDFBMES]|[xyz])(2|')?$/.exec(token);
   const letter = match?.[1] ?? token;
   return {

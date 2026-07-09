@@ -1,4 +1,4 @@
-import { formatMove, parseMove } from "./notation";
+import { parseMove } from "./notation";
 import type { Move } from "./types";
 
 const FACES = ["R", "L", "U", "D", "F", "B"] as const;
@@ -26,6 +26,3 @@ export const randomScramble = (
   }
   return moves;
 };
-
-export const scrambleToString = (moves: readonly Move[]): string =>
-  moves.map(formatMove).join(" ");
