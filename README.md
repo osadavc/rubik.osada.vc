@@ -8,8 +8,7 @@ learn to solve the rubik's cube with interactive guides, built around a 3d cube 
 
 - a beginner's method guide with step-by-step walkthroughs, cube snapshots, and practice panels
 - a 3d cube rendered with three.js / react-three-fiber
-- a small hand-rolled cube engine (`src/lib/cube`) handling state, notation, scrambles, and facelets — with tests
-- more guides coming later (they show up as "coming soon" in the catalog)
+- a small hand-rolled cube engine (`src/lib/cube`) handling state, notation, scrambles, and facelets - with tests
 
 ## stack
 

@@ -35,10 +35,10 @@ const PracticeHud = () => {
         <span className="flex items-center gap-2 text-xs font-medium text-zinc-900">
           <span
             aria-hidden
-            className={`h-1.5 w-1.5 rounded-full ${
+            className={`h-2 w-2 rounded-[2px] ${
               practice.status === "solved"
-                ? "bg-emerald-500"
-                : "bg-amber-500 motion-safe:animate-pulse"
+                ? "bg-[#46a25c]"
+                : "bg-[#e06818] motion-safe:animate-pulse"
             }`}
           />
           {practice.status === "solved" ? "Solved" : "Practice mode"}
@@ -245,9 +245,9 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
                   className={`scroll-mt-[calc(42dvh+4rem)] transition-[opacity,filter] duration-500 motion-reduce:transition-none lg:scroll-mt-24 ${dimClass}`}
                 >
                   <div className="flex items-center gap-4">
-                    <span className="shrink-0 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+                    <span className="shrink-0 text-[13px] font-medium leading-none text-zinc-500">
                       Chapter{" "}
-                      <span className="tabular-nums">
+                      <span className="tabular-nums text-zinc-400">
                         {pad(chapterIndex + 1)}
                       </span>
                     </span>

@@ -116,7 +116,7 @@ export const Walkthrough = () => {
 
       <div className="px-5 pt-4">
         <div className="flex items-baseline justify-between gap-4">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+          <p className="text-[13px] font-medium leading-none text-zinc-500">
             The moves
           </p>
           <p className="text-xs tabular-nums text-zinc-400">

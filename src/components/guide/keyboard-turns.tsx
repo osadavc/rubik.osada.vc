@@ -83,7 +83,7 @@ export const LockNudge = () => {
         key={nudgeAt}
         className="animate-[lock-nudge_2.6s_ease-out_forwards] rounded-full border border-zinc-200 bg-white/95 px-3.5 py-1.5 text-xs font-medium text-zinc-600 shadow-lg shadow-zinc-900/10 backdrop-blur"
       >
-        Watch for now — you turn the cube in{" "}
+        Watch for now - you turn the cube in{" "}
         <span className="font-semibold text-zinc-900">practice</span> blocks
       </p>
     </div>

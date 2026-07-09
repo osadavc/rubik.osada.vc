@@ -20,7 +20,7 @@ export const ContentsList = ({ chapters }: { chapters: GuideChapter[] }) => {
   const rows = Math.ceil(chapters.length / 2);
   return (
     <nav aria-label="Guide contents" className="mt-12">
-      <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+      <p className="text-[13px] font-medium leading-none text-zinc-500">
         Contents
       </p>
       <ol

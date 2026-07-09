@@ -40,12 +40,12 @@ const POINTS = [
   {
     icon: HandGrabbingIcon,
     title: "The cube is real",
-    body: "Drag the space around the cube to look from any angle. When it's your turn, drag a tile — or press its letter key — to turn that layer.",
+    body: "Drag the space around the cube to look from any angle. When it's your turn, drag a tile - or press its letter key - to turn that layer.",
   },
   {
     icon: TargetIcon,
     title: "Then it's your turn",
-    body: "Practice blocks hand you a scramble and a goal, and unlock the cube. Nothing can break — reset any time.",
+    body: "Practice blocks hand you a scramble and a goal, and unlock the cube. Nothing can break - reset any time.",
   },
 ] as const;
 
@@ -81,7 +81,7 @@ export const IntroDialog = () => {
       className="fixed inset-0 m-auto w-[calc(100vw-2.5rem)] max-w-md rounded-3xl border border-zinc-200 bg-white p-0 shadow-2xl shadow-zinc-950/20 backdrop:bg-zinc-950/30 backdrop:backdrop-blur-[2px] open:transition-[opacity,transform,filter] open:duration-300 open:ease-[cubic-bezier(0.23,1,0.32,1)] open:starting:scale-[0.96] open:starting:opacity-0 open:starting:blur-[2px] motion-reduce:open:transition-none"
     >
       <div className="p-6 sm:p-7">
-        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+        <p className="text-[13px] font-medium leading-none text-zinc-500">
           Before you start
         </p>
         <h2 className="mt-2 text-2xl font-semibold tracking-tight text-zinc-900">

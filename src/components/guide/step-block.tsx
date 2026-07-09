@@ -52,15 +52,15 @@ export const StepBlock = ({
         }`}
       >
         <div>
-          <p className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-zinc-400">
+          <p className="flex items-center gap-2 text-[13px] font-medium leading-none text-zinc-500">
             <span
               aria-hidden
-              className={`h-1.5 w-1.5 rounded-full ${
+              className={`h-2 w-2 rounded-[2px] ${
                 kind === "practice"
-                  ? "bg-amber-500"
+                  ? "bg-[#e06818]"
                   : kind === "watch"
-                    ? "bg-zinc-900"
-                    : "bg-zinc-300"
+                    ? "bg-[#3c6fd1]"
+                    : "bg-[#46a25c]"
               }`}
             />
             {KIND_LABEL[kind]}

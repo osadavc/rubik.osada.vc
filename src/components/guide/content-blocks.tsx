@@ -39,7 +39,7 @@ export const Tip = ({ children }: { children: React.ReactNode }) => (
 
 type TryMoveProps = {
   token: string;
-  /** Short meaning shown next to the letter, e.g. "up — the top". */
+  /** Short meaning shown next to the letter, e.g. "up - the top". */
   label: string;
 };
 

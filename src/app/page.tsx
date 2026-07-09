@@ -63,7 +63,7 @@ export default function Home() {
                     {entry.tagline}
                   </p>
                 </div>
-                <span className="shrink-0 rounded-full border border-zinc-200 px-3 py-1 text-xs text-zinc-400">
+                <span className="shrink-0 text-xs font-medium text-zinc-400">
                   Coming soon
                 </span>
               </div>
