@@ -116,15 +116,19 @@ export const beginnersMethod: Guide = {
                 core, so they never move relative to each other. Press play and
                 watch: every layer spins, yet the six glowing centers stay put.
               </p>
-              <PlayChip alg="R L' U D' F B'" label="Spin every face" pace={0.6} />
+              <PlayChip
+                alg="R L' U D' F B'"
+                label="Spin every face"
+                pace={0.6}
+              />
               <p>
-                That means the center tells you what color its face will be
-                when solved. The pairs are always opposite each other:{" "}
+                That means the center tells you what color its face will be when
+                solved. The pairs are always opposite each other:{" "}
                 <Swatch color="white" /> white opposite{" "}
                 <Swatch color="yellow" /> yellow, <Swatch color="blue" /> blue
                 opposite <Swatch color="green" /> green, and{" "}
-                <Swatch color="orange" /> orange opposite{" "}
-                <Swatch color="red" /> red.
+                <Swatch color="orange" /> orange opposite <Swatch color="red" />{" "}
+                red.
               </p>
             </>
           ),
@@ -154,9 +158,9 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 A <strong>corner</strong> piece has three colored tiles, and
-                there are eight of them. Every piece on the cube is a center,
-                an edge, or a corner. A piece can never change type, and its
-                colors never separate. That is why the cube is solvable at all.
+                there are eight of them. Every piece on the cube is a center, an
+                edge, or a corner. A piece can never change type, and its colors
+                never separate. That is why the cube is solvable at all.
               </p>
             </>
           ),
@@ -215,13 +219,16 @@ export const beginnersMethod: Guide = {
               </p>
               <div className="grid grid-cols-1 gap-2 sm:grid-cols-3">
                 <TryMove token="U" label="quarter turn clockwise" />
-                <TryMove token="U'" label={'counterclockwise \u2014 "U prime"'} />
+                <TryMove
+                  token="U'"
+                  label={'counterclockwise \u2014 "U prime"'}
+                />
                 <TryMove token="U2" label="half turn, twice around" />
               </div>
               <p>
                 Feel the difference: tap <M>U</M> then <M>{"U'"}</M> and the
-                cube is back where it began - a prime undoes its plain twin.
-                Two taps of <M>U2</M> do the same. On a keyboard, hold{" "}
+                cube is back where it began - a prime undoes its plain twin. Two
+                taps of <M>U2</M> do the same. On a keyboard, hold{" "}
                 <Kbd>Shift</Kbd> with a face letter for the prime turn.
               </p>
               <p>
@@ -249,9 +256,9 @@ export const beginnersMethod: Guide = {
           content: (
             <>
               <p>
-                One rule matters when following an algorithm: the face you
-                start with as the front <strong>stays the front</strong> for
-                the whole sequence. Do not re-grip halfway through.
+                One rule matters when following an algorithm: the face you start
+                with as the front <strong>stays the front</strong> for the whole
+                sequence. Do not re-grip halfway through.
               </p>
               <p>
                 Occasionally the method asks you to rotate the entire cube
@@ -279,9 +286,9 @@ export const beginnersMethod: Guide = {
           content: (
             <>
               <p>
-                Begin with the <Swatch color="yellow" /> yellow center on the
-                up face. It feels backwards to start the white layer by looking
-                at yellow, but the daisy makes the next stage almost automatic.
+                Begin with the <Swatch color="yellow" /> yellow center on the up
+                face. It feels backwards to start the white layer by looking at
+                yellow, but the daisy makes the next stage almost automatic.
               </p>
               <p>
                 From here on, tiles that do not matter yet are dimmed, exactly
@@ -374,8 +381,8 @@ export const beginnersMethod: Guide = {
               </p>
               <Tip>
                 <p>
-                  Rotate the up face first to move the finished petal out of
-                  the way, then bring the new white edge up.
+                  Rotate the up face first to move the finished petal out of the
+                  way, then bring the new white edge up.
                 </p>
               </Tip>
             </>
@@ -396,8 +403,8 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 Finally, the bottom layer. A white edge tile facing down is two
-                quarter turns from home: turn its face twice and it lands on
-                top with white showing up.
+                quarter turns from home: turn its face twice and it lands on top
+                with white showing up.
               </p>
             </>
           ),
@@ -419,9 +426,9 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 Sometimes an edge reaches the top layer with its white tile
-                facing sideways instead of up. Hold the cube so the flipped
-                edge is on the <strong>right face</strong>, then run your first
-                real algorithm. Three moves: out, over, back in.
+                facing sideways instead of up. Hold the cube so the flipped edge
+                is on the <strong>right face</strong>, then run your first real
+                algorithm. Three moves: out, over, back in.
               </p>
             </>
           ),
@@ -488,15 +495,15 @@ export const beginnersMethod: Guide = {
           content: (
             <>
               <p>
-                Keep the daisy on top. Pick <strong>one</strong> petal - the
-                one nearest you - and look at its <strong>front tile</strong>{" "}
-                (the color that is not white). Turn the up face until that tile
-                sits directly above the center of the same color.
+                Keep the daisy on top. Pick <strong>one</strong> petal - the one
+                nearest you - and look at its <strong>front tile</strong> (the
+                color that is not white). Turn the up face until that tile sits
+                directly above the center of the same color.
               </p>
               <Tip>
                 <p>
-                  Matching one petal does not line the others up. Side colors
-                  on a daisy are usually out of order, so you handle petals{" "}
+                  Matching one petal does not line the others up. Side colors on
+                  a daisy are usually out of order, so you handle petals{" "}
                   <strong>one at a time</strong>: match, send down, then the
                   next.
                 </p>
@@ -518,10 +525,10 @@ export const beginnersMethod: Guide = {
           content: (
             <>
               <p>
-                With that one petal matched, turn its face twice. The white
-                tile travels to the bottom face, and the matched color stays
-                glued to its center on the way down. The other petals stay on
-                top - you will come back for them next.
+                With that one petal matched, turn its face twice. The white tile
+                travels to the bottom face, and the matched color stays glued to
+                its center on the way down. The other petals stay on top - you
+                will come back for them next.
               </p>
             </>
           ),
@@ -572,14 +579,13 @@ export const beginnersMethod: Guide = {
                 Flip the cube over and admire it: a white cross, with each
                 arm&apos;s side tile matching the <Swatch color="green" />{" "}
                 <Swatch color="red" /> <Swatch color="blue" />{" "}
-                <Swatch color="orange" /> center below it. That side matching
-                is what separates a real cross from a lucky daisy.
+                <Swatch color="orange" /> center below it. That side matching is
+                what separates a real cross from a lucky daisy.
               </p>
               <Tip>
                 <p>
-                  Master one stage by re-scrambling and repeating it a few
-                  times before moving on. Speed comes from certainty, not
-                  rushing.
+                  Master one stage by re-scrambling and repeating it a few times
+                  before moving on. Speed comes from certainty, not rushing.
                 </p>
               </Tip>
             </>
@@ -618,8 +624,8 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 A daisy whose petals are out of order. Match and sink them one
-                at a time - the last drill is the rare lucky case where one
-                spin lines them all up.
+                at a time - the last drill is the rare lucky case where one spin
+                lines them all up.
               </p>
             </>
           ),
@@ -642,11 +648,11 @@ export const beginnersMethod: Guide = {
           content: (
             <>
               <p>
-                Hold the cube with the white cross <strong>up</strong>. A
-                corner piece belongs exactly where its three colors meet: the
-                glowing white, red, and blue corner goes between the white,
-                red, and blue centers. No exceptions, so you can always work
-                out a corner&apos;s home just by reading its colors.
+                Hold the cube with the white cross <strong>up</strong>. A corner
+                piece belongs exactly where its three colors meet: the glowing
+                white, red, and blue corner goes between the white, red, and
+                blue centers. No exceptions, so you can always work out a
+                corner&apos;s home just by reading its colors.
               </p>
             </>
           ),
@@ -888,9 +894,9 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 The top tile here is <Swatch color="red" /> red, matching the
-                center on the right. The edge moves right, in two halves of
-                four moves. Step through slowly and keep your eye on the
-                glowing edge the whole way.
+                center on the right. The edge moves right, in two halves of four
+                moves. Step through slowly and keep your eye on the glowing edge
+                the whole way.
               </p>
             </>
           ),
@@ -947,8 +953,8 @@ export const beginnersMethod: Guide = {
               <p>
                 Sometimes no vertical line is possible from any side, because a
                 middle edge is sitting in a slot the wrong way around. Hold the
-                cube so that misplaced edge is in the front right slot, then
-                run the right insert once to eject it.
+                cube so that misplaced edge is in the front right slot, then run
+                the right insert once to eject it.
               </p>
             </>
           ),
@@ -1066,8 +1072,9 @@ export const beginnersMethod: Guide = {
               <p>With the shape held correctly, run the six moves below.</p>
               <Tip>
                 <p>
-                  Remember it as <strong>FUR says U&#8242;R&#8242;F&#8242;</strong>.
-                  The first three moves go clockwise, the next three undo them
+                  Remember it as{" "}
+                  <strong>FUR says U&#8242;R&#8242;F&#8242;</strong>. The first
+                  three moves go clockwise, the next three undo them
                   counterclockwise in reverse order.
                 </p>
               </Tip>
@@ -1101,9 +1108,9 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 One pass does not always finish the cross, but it always moves
-                you one shape closer: dot becomes L, L becomes cross. After
-                each run, <strong>rematch</strong> your cube to one of the
-                three pictures and run it again.
+                you one shape closer: dot becomes L, L becomes cross. After each
+                run, <strong>rematch</strong> your cube to one of the three
+                pictures and run it again.
               </p>
             </>
           ),
@@ -1169,13 +1176,25 @@ export const beginnersMethod: Guide = {
                 has a hold, and a saying to remember it by.
               </p>
               <div className="flex flex-wrap items-end gap-6">
-                <TopView setup={SETUPS.suneNone} label="None: yellow tile on the left face" dimNonYellow />
-                <TopView setup={SETUPS.suneFish} label="One: feed the fish" dimNonYellow />
-                <TopView setup={SETUPS.suneTwo} label="Two: left thumb on you" dimNonYellow />
+                <TopView
+                  setup={SETUPS.suneNone}
+                  label="None: yellow tile on the left face"
+                  dimNonYellow
+                />
+                <TopView
+                  setup={SETUPS.suneFish}
+                  label="One: feed the fish"
+                  dimNonYellow
+                />
+                <TopView
+                  setup={SETUPS.suneTwo}
+                  label="Two: left thumb on you"
+                  dimNonYellow
+                />
               </div>
               <p>
-                <strong>None yellow:</strong> hold so a yellow corner tile
-                looks at you from the <strong>left face</strong>. &ldquo;None,
+                <strong>None yellow:</strong> hold so a yellow corner tile looks
+                at you from the <strong>left face</strong>. &ldquo;None,
                 left.&rdquo;
               </p>
               <p>
@@ -1245,9 +1264,9 @@ export const beginnersMethod: Guide = {
           content: (
             <>
               <p>
-                Like the cross, this stage loops: run the algorithm, recount
-                the yellow corners, re-hold by the sayings, and run it again.
-                You may need several passes, and that is normal.
+                Like the cross, this stage loops: run the algorithm, recount the
+                yellow corners, re-hold by the sayings, and run it again. You
+                may need several passes, and that is normal.
               </p>
             </>
           ),
@@ -1302,19 +1321,28 @@ export const beginnersMethod: Guide = {
           title: "Find the tail lights",
           camera: DEFAULT_CAM,
           setup: SETUPS.cornersAdjacent,
-          spotlight: pieces(["orange", "yellow", "green"], ["red", "yellow", "green"]),
+          spotlight: pieces(
+            ["orange", "yellow", "green"],
+            ["red", "yellow", "green"]
+          ),
           content: (
             <>
               <p>
                 Twist the top face until <strong>two corners</strong> land in
                 their correct spots, side colors matching the centers below.
                 Correctly placed corners sitting together look like the tail
-                lights of a car - the glowing pair here - and tail lights
-                belong at the <strong>back</strong>. Hold the cube that way.
+                lights of a car - the glowing pair here - and tail lights belong
+                at the <strong>back</strong>. Hold the cube that way.
               </p>
               <div className="flex flex-wrap items-end gap-6">
-                <TopView setup={SETUPS.cornersAdjacent} label="Tail lights, held in back" />
-                <TopView setup={SETUPS.cornersDiagonal} label="Diagonal: no tail lights" />
+                <TopView
+                  setup={SETUPS.cornersAdjacent}
+                  label="Tail lights, held in back"
+                />
+                <TopView
+                  setup={SETUPS.cornersDiagonal}
+                  label="Diagonal: no tail lights"
+                />
               </div>
             </>
           ),
@@ -1324,7 +1352,10 @@ export const beginnersMethod: Guide = {
           title: "The swap",
           camera: DEFAULT_CAM,
           setup: SETUPS.cornersAdjacent,
-          spotlight: pieces(["orange", "yellow", "blue"], ["red", "yellow", "blue"]),
+          spotlight: pieces(
+            ["orange", "yellow", "blue"],
+            ["red", "yellow", "blue"]
+          ),
           demo: CORNER_PLL,
           demoNotes: [
             "R\u2032un to me…",
@@ -1535,8 +1566,7 @@ export const beginnersMethod: Guide = {
           content: (
             <>
               <p>
-                Three edges out of place. Everything you need, you already
-                know.
+                Three edges out of place. Everything you need, you already know.
               </p>
             </>
           ),
@@ -1567,8 +1597,8 @@ export const beginnersMethod: Guide = {
               </p>
               <ScrambleChip />
               <p>
-                When the layered method feels automatic, speedcubers graduate
-                to CFOP, which collapses these stages into fewer, bigger
+                When the layered method feels automatic, speedcubers graduate to
+                CFOP, which collapses these stages into fewer, bigger
                 algorithms. A guide for it is on the way.
               </p>
             </>
