@@ -1,14 +1,20 @@
 "use client";
 
 import { useMemo } from "react";
-import { DIM_STICKER_COLOR, STICKER_COLORS } from "@/lib/colors";
+import { BODY_COLOR, STICKER_COLORS } from "@/lib/colors";
 import { getFaces, stateAfter } from "@/lib/cube";
 import type { ColorName } from "@/lib/cube";
 
-const CELL = 15;
-const GAP = 2;
-const STRIP = 7;
-const PAD = 2;
+const CELL = 16;
+const GAP = 3;
+const STRIP = 6;
+const PLATE_PAD = 5;
+const STRIP_GAP = 4;
+
+/** Blank plastic tile on the dark plate, for stickers outside the focus. */
+const DIM_CELL_COLOR = "#3b3b40";
+/** Dimmed side stickers sit on the page background, so they stay light. */
+const DIM_STRIP_COLOR = "#e4e4e7";
 
 type TopViewProps = {
   /** Moves from solved producing the pictured state. */
@@ -37,12 +43,16 @@ export const TopView = ({ setup, label, dimNonYellow = false }: TopViewProps) =>
     };
   }, [setup]);
 
-  const fill = (color: ColorName) =>
-    dimNonYellow && color !== "yellow" ? DIM_STICKER_COLOR : STICKER_COLORS[color];
+  const cellFill = (color: ColorName) =>
+    dimNonYellow && color !== "yellow" ? DIM_CELL_COLOR : STICKER_COLORS[color];
+  const stripFill = (color: ColorName) =>
+    dimNonYellow && color !== "yellow" ? DIM_STRIP_COLOR : STICKER_COLORS[color];
 
-  const gridStart = PAD + STRIP + GAP;
   const gridSize = CELL * 3 + GAP * 2;
-  const total = gridStart * 2 + gridSize;
+  const plateSize = gridSize + PLATE_PAD * 2;
+  const plateStart = STRIP + STRIP_GAP;
+  const gridStart = plateStart + PLATE_PAD;
+  const total = plateStart * 2 + plateSize;
   const cellPos = (i: number) => gridStart + i * (CELL + GAP);
 
   return (
@@ -54,6 +64,15 @@ export const TopView = ({ setup, label, dimNonYellow = false }: TopViewProps) =>
         role="img"
         aria-label={label ?? "Cube top view"}
       >
+        {/* Plastic plate under the up face, echoing the 3D cube's body. */}
+        <rect
+          x={plateStart}
+          y={plateStart}
+          width={plateSize}
+          height={plateSize}
+          rx={8}
+          fill={BODY_COLOR}
+        />
         {grid.map((row, r) =>
           row.map((color, c) => (
             <rect
@@ -62,9 +81,8 @@ export const TopView = ({ setup, label, dimNonYellow = false }: TopViewProps) =>
               y={cellPos(r)}
               width={CELL}
               height={CELL}
-              rx={3}
-              fill={fill(color)}
-              stroke="rgba(24,24,27,0.12)"
+              rx={4}
+              fill={cellFill(color)}
             />
           )),
         )}
@@ -72,52 +90,52 @@ export const TopView = ({ setup, label, dimNonYellow = false }: TopViewProps) =>
           <rect
             key={`t-${i}`}
             x={cellPos(i)}
-            y={PAD}
+            y={0}
             width={CELL}
             height={STRIP}
-            rx={2.5}
-            fill={fill(color)}
-            stroke="rgba(24,24,27,0.12)"
+            rx={3}
+            fill={stripFill(color)}
           />
         ))}
         {strips.bottom.map((color, i) => (
           <rect
             key={`b-${i}`}
             x={cellPos(i)}
-            y={gridStart + gridSize + GAP}
+            y={plateStart + plateSize + STRIP_GAP}
             width={CELL}
             height={STRIP}
-            rx={2.5}
-            fill={fill(color)}
-            stroke="rgba(24,24,27,0.12)"
+            rx={3}
+            fill={stripFill(color)}
           />
         ))}
         {strips.left.map((color, i) => (
           <rect
             key={`l-${i}`}
-            x={PAD}
+            x={0}
             y={cellPos(i)}
             width={STRIP}
             height={CELL}
-            rx={2.5}
-            fill={fill(color)}
-            stroke="rgba(24,24,27,0.12)"
+            rx={3}
+            fill={stripFill(color)}
           />
         ))}
         {strips.right.map((color, i) => (
           <rect
             key={`r-${i}`}
-            x={gridStart + gridSize + GAP}
+            x={plateStart + plateSize + STRIP_GAP}
             y={cellPos(i)}
             width={STRIP}
             height={CELL}
-            rx={2.5}
-            fill={fill(color)}
-            stroke="rgba(24,24,27,0.12)"
+            rx={3}
+            fill={stripFill(color)}
           />
         ))}
       </svg>
-      {label && <figcaption className="text-xs text-zinc-500">{label}</figcaption>}
+      {label && (
+        <figcaption className="max-w-40 text-center text-xs text-zinc-500">
+          {label}
+        </figcaption>
+      )}
     </figure>
   );
 };
