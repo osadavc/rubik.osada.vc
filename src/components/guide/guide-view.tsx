@@ -195,7 +195,10 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
 
       <div className="mx-auto max-w-[90rem] lg:grid lg:grid-cols-2">
         {/* Cube panel: pinned below the header on mobile, full-height left column on desktop. */}
-        <div className="sticky top-12 z-20 flex h-[42dvh] flex-col border-b border-zinc-200/80 bg-[var(--background)] shadow-[0_8px_24px_-20px_rgba(24,24,27,0.4)] lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:border-b-0 lg:shadow-none">
+        <div
+          data-cube-panel
+          className="sticky top-12 z-20 flex h-[42dvh] flex-col border-b border-zinc-200/80 bg-[var(--background)] shadow-[0_8px_24px_-20px_rgba(24,24,27,0.4)] lg:top-14 lg:h-[calc(100dvh-3.5rem)] lg:border-b-0 lg:shadow-none"
+        >
           <div className="relative min-h-0 flex-1">
             <CubeViewport interactive />
             <PracticeHud />

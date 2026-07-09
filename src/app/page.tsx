@@ -31,23 +31,23 @@ export default function Home() {
               key={entry.slug}
               className="relative overflow-hidden rounded-3xl border border-zinc-200 bg-white p-6 sm:p-7"
             >
-              <div className="flex flex-col gap-6">
-                <div className="relative z-10 max-w-sm space-y-3">
-                  <div className="flex gap-4 text-xs font-medium text-zinc-400">
-                    <span>{entry.puzzle}</span>
-                    <span>{DIFFICULTY_LABEL[entry.difficulty]}</span>
-                    <span>about {entry.estMinutes} min</span>
-                  </div>
-                  <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
-                    {entry.title}
-                  </h2>
-                  <p className="text-sm leading-relaxed text-zinc-500">
-                    {entry.tagline}
-                  </p>
-                  <GuideCta slug={entry.slug} />
+              {/* Text reserves the bottom-right corner on mobile so the cube can
+                  bleed out of it, echoing the desktop right-edge crop. */}
+              <div className="relative z-10 max-w-sm space-y-3 pb-36 sm:pb-0">
+                <div className="flex gap-4 text-xs font-medium text-zinc-400">
+                  <span>{entry.puzzle}</span>
+                  <span>{DIFFICULTY_LABEL[entry.difficulty]}</span>
+                  <span>about {entry.estMinutes} min</span>
                 </div>
-                <HeroCube className="pointer-events-none h-44 w-full self-center sm:absolute sm:-right-32 sm:top-1/2 sm:h-112 sm:w-md sm:-translate-y-1/2 sm:self-auto" />
+                <h2 className="text-2xl font-semibold tracking-tight text-zinc-900">
+                  {entry.title}
+                </h2>
+                <p className="text-sm leading-relaxed text-zinc-500">
+                  {entry.tagline}
+                </p>
+                <GuideCta slug={entry.slug} />
               </div>
+              <HeroCube className="pointer-events-none absolute -bottom-24 -right-24 size-96 sm:-right-32 sm:bottom-auto sm:top-1/2 sm:h-112 sm:w-md sm:-translate-y-1/2" />
             </div>
           ))}
 
