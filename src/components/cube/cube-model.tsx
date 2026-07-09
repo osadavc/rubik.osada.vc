@@ -46,7 +46,6 @@ type DragGesture = {
 };
 
 const CELEBRATE_MS = 1400;
-const WHITE = new THREE.Color("#fffdf4");
 
 type CubeModelProps = {
   interactive: boolean;
@@ -158,10 +157,11 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
       group.position.copy(vec);
     }
 
-    // Spotlight pulse: slow breathing glow, steady under reduced motion.
+    // Spotlight pulse: soft same-hue glow so matched stickers stay the same
+    // color (no white wash). Steady under reduced motion.
     const pulse = store.reducedMotion
-      ? 0.3
-      : 0.3 + 0.16 * Math.sin((now / 1000) * Math.PI);
+      ? 0.14
+      : 0.1 + 0.08 * Math.sin((now / 1000) * Math.PI);
 
     const celebrating =
       store.celebrateAt !== null && now - store.celebrateAt < CELEBRATE_MS;
@@ -178,8 +178,8 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
       glowColor.setRGB(0, 0, 0);
 
       if (spotKeys.current.has(key) && target) {
-        glowColor.copy(target).multiplyScalar(pulse);
-        glow = 1;
+        glowColor.copy(target);
+        glow = pulse;
       }
       const cubieId = cubieOfKey.current.get(key);
       if (celebrating && cubieId !== undefined) {
@@ -189,12 +189,12 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
           const along = (group.position.x + group.position.y + group.position.z) / 3;
           const front = -1.4 + celebrateT * 2.8;
           const d = Math.abs(along - front);
-          const wave = Math.max(0, 1 - d / 0.55) * 0.55 * Math.sin(celebrateT * Math.PI);
+          const wave = Math.max(0, 1 - d / 0.55) * 0.35 * Math.sin(celebrateT * Math.PI);
           if (wave > 0.01) {
-            glowColor.r += target.r * wave + WHITE.r * wave * 0.4;
-            glowColor.g += target.g * wave + WHITE.g * wave * 0.4;
-            glowColor.b += target.b * wave + WHITE.b * wave * 0.4;
-            glow = 1;
+            glowColor.r += target.r * wave;
+            glowColor.g += target.g * wave;
+            glowColor.b += target.b * wave;
+            glow = Math.max(glow, wave);
           }
         }
       }

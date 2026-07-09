@@ -43,6 +43,7 @@ export const Cubie = ({ cubieId, stickers, registerGroup, registerMaterial }: Cu
             color={sticker.baseColor}
             roughness={0.36}
             metalness={0}
+            toneMapped={false}
           />
         </mesh>
       );

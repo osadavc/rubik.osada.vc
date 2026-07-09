@@ -3,12 +3,12 @@ import type { ColorName } from "./cube/types";
 /**
  * Sticker palette, tuned slightly desaturated so the cube reads premium
  * rather than toy-bright. Single source for 3D materials and SVG diagrams.
- * Yellow and orange are deliberately pushed apart (bright lemon vs deep
- * red-orange) so they stay distinguishable on shaded faces of the 3D cube.
+ * Yellow is kept saturated enough that it never reads as gray next to white
+ * petals; orange stays a deeper red-orange so the two never collide.
  */
 export const STICKER_COLORS: Record<ColorName, string> = {
   white: "#f6f5f0",
-  yellow: "#f5d820",
+  yellow: "#f0c400",
   red: "#cf4534",
   orange: "#e06818",
   green: "#46a25c",

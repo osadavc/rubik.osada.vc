@@ -21,7 +21,6 @@ import {
 import type { Mat3, Sticker } from "@/lib/cube";
 
 const Z_AXIS = new THREE.Vector3(0, 0, 1);
-const GLOW_TINT = new THREE.Color("#fffdf4");
 
 /* Shared across every snapshot; passed by reference so r3f never disposes them. */
 const bodyGeometry = new RoundedBoxGeometry(CUBIE_SIZE, CUBIE_SIZE, CUBIE_SIZE, 3, 0.09);
@@ -69,9 +68,9 @@ const buildCubies = (
     const spot = lit && (spotlight?.(sticker) ?? false);
     info.set(`${sticker.cubieId}:${sticker.homeFace}`, {
       color,
-      glow: spot
-        ? `#${new THREE.Color(color).lerp(GLOW_TINT, 0.3).getHexString()}`
-        : null,
+      // Same hue as the sticker - a white-tinted glow made matched tiles look
+      // like a different shade than their center.
+      glow: spot ? color : null,
     });
   }
   return state.map((cubie) => {
@@ -181,8 +180,9 @@ export const CubeSnapshot = ({
                         color={sticker.color}
                         roughness={0.36}
                         metalness={0}
+                        toneMapped={false}
                         emissive={sticker.glow ?? "#000000"}
-                        emissiveIntensity={sticker.glow ? 0.55 : 0}
+                        emissiveIntensity={sticker.glow ? 0.16 : 0}
                       />
                     </mesh>
                   ))}
