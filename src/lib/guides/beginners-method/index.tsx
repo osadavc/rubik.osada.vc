@@ -59,11 +59,11 @@ const DEFAULT_CAM = { azimuth: 0.68, polar: 1.08 };
 const LOW_CAM = { azimuth: 0.68, polar: 1.5 };
 
 const FACE_KEY = [
-  ["U", "up — the top"],
-  ["D", "down — the bottom"],
+  ["U", "up - the top"],
+  ["D", "down - the bottom"],
   ["L", "left"],
   ["R", "right"],
-  ["F", "front — faces you"],
+  ["F", "front - faces you"],
   ["B", "back"],
 ] as const;
 
@@ -99,12 +99,6 @@ export const beginnersMethod: Guide = {
                 The lit band on the cube is the top layer. Try dragging it
                 around, and grab empty space to orbit the whole cube.
               </p>
-              <Tip>
-                <p>
-                  Mindset is critical. Learning to solve the cube is difficult,
-                  but if you persevere, you can absolutely do it.
-                </p>
-              </Tip>
             </>
           ),
         },
@@ -197,7 +191,7 @@ export const beginnersMethod: Guide = {
               </div>
               <p>
                 These cards are live: <strong>tap one</strong> and that face
-                turns on the cube — or press the same letter on your{" "}
+                turns on the cube - or press the same letter on your{" "}
                 <strong>keyboard</strong>: <Kbd>U</Kbd> <Kbd>D</Kbd>{" "}
                 <Kbd>L</Kbd> <Kbd>R</Kbd> <Kbd>F</Kbd> <Kbd>B</Kbd>. Four turns
                 of the same face bring the cube back to where it started.
@@ -226,7 +220,7 @@ export const beginnersMethod: Guide = {
               </div>
               <p>
                 Feel the difference: tap <M>U</M> then <M>{"U'"}</M> and the
-                cube is back where it began — a prime undoes its plain twin.
+                cube is back where it began - a prime undoes its plain twin.
                 Two taps of <M>U2</M> do the same. On a keyboard, hold{" "}
                 <Kbd>Shift</Kbd> with a face letter for the prime turn.
               </p>
@@ -292,7 +286,7 @@ export const beginnersMethod: Guide = {
               <p>
                 From here on, tiles that do not matter yet are dimmed, exactly
                 like the gray tiles in the printed guide. Focus only on what is
-                lit — right now, the four white edges.
+                lit - right now, the four white edges.
               </p>
             </>
           ),
@@ -308,7 +302,7 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 This is a finished daisy: four white edge tiles around the
-                yellow center, like petals — they are glowing on the cube.
+                yellow center, like petals - they are glowing on the cube.
               </p>
               <p>
                 Look closely at their sides: <strong>none</strong> of the side
@@ -330,7 +324,7 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 Look at the top layer first. Any edge that already shows white
-                on top is a finished petal — the two glowing ones here. Leave
+                on top is a finished petal - the two glowing ones here. Leave
                 those alone and count how many you still need.
               </p>
             </>
@@ -351,7 +345,7 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 Next, scan the middle layer. This cube has a white edge sitting
-                in the middle layer, its white tile facing sideways — it is
+                in the middle layer, its white tile facing sideways - it is
                 glowing. Turn the front face so the edge rises into the top
                 layer. Watch it travel.
               </p>
@@ -368,14 +362,14 @@ export const beginnersMethod: Guide = {
           demo: "U F2",
           demoNotes: [
             "First, spin the top: the finished petal slides out of the landing slot.",
-            "Now the white edge comes up into the empty slot — nothing gets knocked out.",
+            "Now the white edge comes up into the empty slot - nothing gets knocked out.",
           ],
           content: (
             <>
               <p>
                 Careful: if the landing slot on top already holds a petal, a
                 turn would knock it right back out. Both pieces involved are
-                glowing on the cube — the petal in danger and the edge that
+                glowing on the cube - the petal in danger and the edge that
                 wants its spot.
               </p>
               <Tip>
@@ -419,7 +413,7 @@ export const beginnersMethod: Guide = {
           demoNotes: [
             "The flipped edge drops out of the top layer, down into the middle.",
             "The top spins so an empty slot waits above the edge.",
-            "The edge rises back up — this time with white facing up.",
+            "The edge rises back up - this time with white facing up.",
           ],
           content: (
             <>
@@ -465,7 +459,7 @@ export const beginnersMethod: Guide = {
             <>
               <p>
                 Time to do it yourself. Three scrambles, from easy to sneaky.
-                The cube is yours — drag faces to turn them. Remember: any four
+                The cube is yours - drag faces to turn them. Remember: any four
                 white petals count, no matter what their side colors do.
               </p>
             </>
@@ -489,16 +483,24 @@ export const beginnersMethod: Guide = {
           spotlight: piece("white", "blue"),
           demo: "U'",
           demoNotes: [
-            "The top turns until the glowing petal's side color lines up directly above the center of the same color.",
+            "The top turns until the glowing petal's side color lines up directly above the center of the same color. Only this petal needs to match - ignore the others for now.",
           ],
           content: (
             <>
               <p>
-                Keep the daisy on top. Look at the <strong>front tile</strong>{" "}
-                of the petal nearest you: it has some color besides white. Turn
-                the up face until that tile sits directly above the center of
-                the same color.
+                Keep the daisy on top. Pick <strong>one</strong> petal - the
+                one nearest you - and look at its <strong>front tile</strong>{" "}
+                (the color that is not white). Turn the up face until that tile
+                sits directly above the center of the same color.
               </p>
+              <Tip>
+                <p>
+                  Matching one petal does not line the others up. Side colors
+                  on a daisy are usually out of order, so you handle petals{" "}
+                  <strong>one at a time</strong>: match, send down, then the
+                  next.
+                </p>
+              </Tip>
             </>
           ),
         },
@@ -506,19 +508,20 @@ export const beginnersMethod: Guide = {
           id: "cross-send",
           title: "Send it down",
           camera: LOW_CAM,
-          setup: SETUPS.daisy,
+          setup: SETUPS.crossMatchedPair,
           highlight: whiteEdgesFocus,
           spotlight: piece("white", "blue"),
           demo: "F2",
           demoNotes: [
-            "A half turn: the white tile dives to the bottom face, and the side color stays glued to its center the whole way down.",
+            "A half turn: the white tile dives to the bottom face, and the side color stays glued to its center the whole way down. Leave the other petals on top for now.",
           ],
           content: (
             <>
               <p>
-                With the petal matched, turn that face twice. The white tile
-                travels to the bottom face, and the matched color stays glued
-                to its center on the way down.
+                With that one petal matched, turn its face twice. The white
+                tile travels to the bottom face, and the matched color stays
+                glued to its center on the way down. The other petals stay on
+                top - you will come back for them next.
               </p>
             </>
           ),
@@ -532,18 +535,26 @@ export const beginnersMethod: Guide = {
           spotlight: whiteEdges,
           demo: DEMOS.crossAround,
           demoNotes: [
-            "Match the first petal over its center.",
+            "Match the front petal over its center.",
             "Send it down.",
-            "Second petal down.",
-            "Third petal down.",
-            "And the last one — that is the cross.",
+            "Re-grip: turn the whole cube to bring the next petal to the front.",
+            "Match this petal - a half turn of the top.",
+            "Send it down.",
+            "Next face.",
+            "Match again.",
+            "Send down.",
+            "Last petal to the front.",
+            "Match.",
+            "Send it down - that is the cross.",
           ],
           pace: 0.65,
           content: (
             <>
               <p>
-                Repeat for the remaining petals: match, send down, move to the
-                next face. Four petals, four double turns.
+                That is the whole loop: match one petal, send it down, turn the
+                cube to face the next one, and repeat. Four petals, four times.
+                Sometimes a lucky top turn lines up more than one petal - send
+                each matched one down before you spin the top again.
               </p>
             </>
           ),
@@ -586,28 +597,29 @@ export const beginnersMethod: Guide = {
           drills: [
             {
               setup: SETUPS.crossPractice,
-              label: "Half spin",
-              hint: "The petals are all misaligned by the same amount. Turn the top face until one matches its center, check the others, then send each one down with a double turn.",
+              label: "One at a time",
+              hint: "Match the front petal, send it down, then send the back one (it is already matched). Spin the top to match the last pair and send those down too.",
               solution: DEMOS.crossPracticeSolution,
             },
             {
-              setup: `${DAISY_SETUP} U'`,
-              label: "Quarter off",
-              hint: "One quarter turn of the top lines every petal up at once. Then four double turns.",
-              solution: "U F2 R2 B2 L2",
+              setup: SETUPS.crossMismatch,
+              label: "Re-grip around",
+              hint: "Same daisy, but work face by face: match the front, F2, turn the whole cube (y), and repeat until all four are down.",
+              solution: DEMOS.crossAround,
             },
             {
-              setup: `${DAISY_SETUP} U`,
-              label: "Other way",
-              hint: "Same idea, but the top needs to turn the other direction this time.",
-              solution: "U' F2 R2 B2 L2",
+              setup: `${DAISY_SETUP} U'`,
+              label: "Lucky spin",
+              hint: "Sometimes one top turn lines every petal up at once. When that happens, just send all four down - but do not count on it. Usually you match and sink one at a time.",
+              solution: "U F2 R2 B2 L2",
             },
           ],
           content: (
             <>
               <p>
-                A full daisy with every petal out of position. Match and sink
-                all four, three different ways.
+                A daisy whose petals are out of order. Match and sink them one
+                at a time - the last drill is the rare lucky case where one
+                spin lines them all up.
               </p>
             </>
           ),
@@ -648,7 +660,7 @@ export const beginnersMethod: Guide = {
           spotlight: piece("white", "red", "green"),
           demo: "D2",
           demoNotes: [
-            "The bottom face spins until the glowing corner sits directly between the two side centers matching its colors — right under its home.",
+            "The bottom face spins until the glowing corner sits directly between the two side centers matching its colors - right under its home.",
           ],
           content: (
             <>
@@ -673,7 +685,7 @@ export const beginnersMethod: Guide = {
             "The corner slides along the bottom, out of the way.",
             "The right face opens its slot downward.",
             "The bottom carries the corner into the open slot.",
-            "The right face closes — the corner rides up into its home.",
+            "The right face closes - the corner rides up into its home.",
           ],
           content: (
             <>
@@ -745,10 +757,10 @@ export const beginnersMethod: Guide = {
           spotlight: piece("white", "green", "red"),
           demo: CORNER_DOWN_FIX,
           demoNotes: [
-            "The front face swings the corner out of its spot — the white tile leaves the floor.",
+            "The front face swings the corner out of its spot - the white tile leaves the floor.",
             "The bottom slides the corner around, out of the way.",
             "The front face returns to where it was.",
-            "A half turn brings the corner back under its slot — white now faces front, ready to insert.",
+            "A half turn brings the corner back under its slot - white now faces front, ready to insert.",
           ],
           content: (
             <>
@@ -792,7 +804,7 @@ export const beginnersMethod: Guide = {
             {
               setup: SETUPS.cornerDownCase,
               label: "Facing down",
-              hint: "White points at the floor. Twist it out and back first — F D\u2032 F\u2032 D2 — then use the right insert.",
+              hint: "White points at the floor. Twist it out and back first - F D\u2032 F\u2032 D2 - then use the right insert.",
               solution: `${CORNER_DOWN_FIX} ${CORNER_RIGHT}`,
             },
           ],
@@ -869,7 +881,7 @@ export const beginnersMethod: Guide = {
             "Second half: line the pair up over the empty slot.",
             null,
             null,
-            "The front closes — the edge settles into its slot.",
+            "The front closes - the edge settles into its slot.",
           ],
           pace: 0.7,
           content: (
@@ -960,7 +972,7 @@ export const beginnersMethod: Guide = {
             {
               setup: `x2 ${INV_INSERT_LEFT} U`,
               label: "Goes left",
-              hint: "Form the line, read the top tile — it matches the left center this time. Mirror everything.",
+              hint: "Form the line, read the top tile - it matches the left center this time. Mirror everything.",
               solution: `U' ${INSERT_LEFT}`,
             },
             {
@@ -1046,7 +1058,7 @@ export const beginnersMethod: Guide = {
             "…R. Say it: FUR.",
             "Now FUR \u201csays\u201d the reverse: U\u2032…",
             "…R\u2032…",
-            "…F\u2032. FUR says U\u2032R\u2032F\u2032 — and the cross appears.",
+            "…F\u2032. FUR says U\u2032R\u2032F\u2032 - and the cross appears.",
           ],
           pace: 0.7,
           content: (
@@ -1189,7 +1201,7 @@ export const beginnersMethod: Guide = {
           demoNotes: [
             "The right hand starts.",
             "The top always turns clockwise in this algorithm.",
-            "The right face alternates direction — counterclockwise now.",
+            "The right face alternates direction - counterclockwise now.",
             "Top clockwise again.",
             "Right, back the other way.",
             "A double turn on top.",
@@ -1297,7 +1309,7 @@ export const beginnersMethod: Guide = {
                 Twist the top face until <strong>two corners</strong> land in
                 their correct spots, side colors matching the centers below.
                 Correctly placed corners sitting together look like the tail
-                lights of a car — the glowing pair here — and tail lights
+                lights of a car - the glowing pair here - and tail lights
                 belong at the <strong>back</strong>. Hold the cube that way.
               </p>
               <div className="flex flex-wrap items-end gap-6">
@@ -1332,7 +1344,7 @@ export const beginnersMethod: Guide = {
               <p>
                 With the tail lights in back, this swaps the two glowing front
                 corners. It is the longest algorithm in the method, so the
-                printed guide teaches it as a chant — follow along under each
+                printed guide teaches it as a chant - follow along under each
                 move.
               </p>
             </>
@@ -1404,7 +1416,7 @@ export const beginnersMethod: Guide = {
           content: (
             <>
               <p>
-                Corners may look solved from the top — yellow everywhere — but
+                Corners may look solved from the top - yellow everywhere - but
                 their side colors give them away. Seat them properly.
               </p>
             </>
@@ -1477,7 +1489,7 @@ export const beginnersMethod: Guide = {
           spotlight: cyclingYellowEdges,
           demo: EDGE_PLL_PRIME,
           demoNotes: [
-            "Same shape as before — only the two top turns flip direction.",
+            "Same shape as before - only the two top turns flip direction.",
             "U\u2032 instead of U…",
             null,
             null,
@@ -1516,7 +1528,7 @@ export const beginnersMethod: Guide = {
             {
               setup: SETUPS.edgesCyclePrime,
               label: "Cycle right",
-              hint: "The front edge matches the right center this time — switch both U turns to U\u2032.",
+              hint: "The front edge matches the right center this time - switch both U turns to U\u2032.",
               solution: EDGE_PLL_PRIME,
             },
           ],
@@ -1549,7 +1561,7 @@ export const beginnersMethod: Guide = {
                 world falls to those same eight stages.
               </p>
               <p>
-                Scramble the cube and run the journey end to end — this time
+                Scramble the cube and run the journey end to end - this time
                 with nothing dimmed and no help lit up. The cube is all yours
                 here: drag faces, or turn with the letter keys.
               </p>

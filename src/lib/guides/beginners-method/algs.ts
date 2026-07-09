@@ -42,8 +42,15 @@ export const SETUPS = {
   daisyBottomCase: `${DAISY_MIXED} F2`,
   daisyFlipCase: `${DAISY_MIXED} ${invertAlg(DAISY_FLIP)}`,
   daisyPractice: `${DAISY_MIXED} R2 U2`,
-  crossMismatch: `${DAISY_SETUP} U`,
-  crossPractice: `${DAISY_SETUP} U2`,
+  /**
+   * Daisy with opposite petals swapped. No single U turn lines every petal
+   * up at once - you have to match, send down, and repeat. Trailing U so the
+   * starting view has zero petals matched.
+   */
+  crossMismatch: `${DAISY_SETUP} F2 B2 U2 F2 B2 U`,
+  /** Same swap, with the front (and back) petal already matched - ready to send down. */
+  crossMatchedPair: `${DAISY_SETUP} F2 B2 U2 F2 B2`,
+  crossPractice: `${DAISY_SETUP} F2 B2 U2 F2 B2 U`,
   crossDone: "R' D' R L D L' D2",
   cornerRightCase: invertAlg(CORNER_RIGHT),
   cornerLeftCase: invertAlg(CORNER_LEFT),
@@ -74,8 +81,10 @@ export const SETUPS = {
 /** Demos and practice solutions that involve repetition or re-holds. */
 export const DEMOS = {
   daisyPracticeSolution: "U2 R2",
-  crossAround: "U' F2 R2 B2 L2",
-  crossPracticeSolution: "U2 F2 R2 B2 L2",
+  /** Match, send down, re-grip, repeat - the real one-petal-at-a-time loop. */
+  crossAround: "U' F2 y U2 F2 y U2 F2 y U2 F2",
+  /** Same solve without re-grips: send the matched pair, then the other pair. */
+  crossPracticeSolution: "U' F2 B2 U2 L2 R2",
   cornerEscape: `y' ${CORNER_ESCAPE}`,
   middlePracticeSolution: `U ${INSERT_RIGHT}`,
   yellowLine2x: `${YELLOW_CROSS} ${YELLOW_CROSS}`,

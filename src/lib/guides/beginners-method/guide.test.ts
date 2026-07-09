@@ -181,8 +181,27 @@ describe("daisy stage", () => {
 });
 
 describe("white cross stage", () => {
-  test("match and send down completes the cross from a rotated daisy", () => {
+  test("mismatch daisy cannot line every petal up with one top turn", () => {
+    const state = stateAfter(SETUPS.crossMismatch);
+    expect(hasDaisy(state)).toBe(true);
+    expect(matchedPetalCount(state)).toBe(0);
+    for (const turn of ["U", "U'", "U2"] as const) {
+      expect(matchedPetalCount(applyAlg(state, turn))).toBeLessThan(4);
+    }
+  });
+
+  test("match and send down completes the cross one petal at a time", () => {
     expect(hasWhiteCross(applyAlg(stateAfter(SETUPS.crossMismatch), DEMOS.crossAround))).toBe(true);
+    expect(
+      hasWhiteCross(applyAlg(stateAfter(SETUPS.crossPractice), DEMOS.crossPracticeSolution)),
+    ).toBe(true);
+  });
+
+  test("send-down setup already has the front petal matched", () => {
+    expect(matchedPetalCount(stateAfter(SETUPS.crossMatchedPair))).toBe(2);
+    expect(hasWhiteCross(applyAlg(stateAfter(SETUPS.crossMatchedPair), "F2 B2 U2 L2 R2"))).toBe(
+      true,
+    );
   });
 
   test("cross done state has the cross but unsolved corners", () => {
