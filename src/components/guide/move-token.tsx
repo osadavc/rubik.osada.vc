@@ -16,7 +16,18 @@ type ParsedToken = {
 };
 
 const parseToken = (token: string): ParsedToken => {
-  const match = /^([RLUDFBMES]|[xyz])(2|')?$/.exec(token);
+  // Wide big-cube tokens: Rr, Dd2, and the guide's prime form R'r'.
+  const wide =
+    /^([RLUDFB])[a-z](2|')?$/.exec(token) ?? /^([RLUDFB])'[a-z]'$/.exec(token);
+  if (wide) {
+    return {
+      letter: `${wide[1]}${wide[1].toLowerCase()}`,
+      prime: token.includes("'"),
+      double: token.endsWith("2"),
+      regrip: false,
+    };
+  }
+  const match = /^([RLUDFBMES]|[rludfb]|[xyz])(2|')?$/.exec(token);
   const letter = match?.[1] ?? token;
   return {
     letter,
@@ -36,6 +47,18 @@ const FACE_LABEL: Record<string, string> = {
   M: "middle slice",
   E: "middle slice",
   S: "middle slice",
+  u: "inside-up slice",
+  d: "inside-down slice",
+  l: "inside-left slice",
+  r: "inside-right slice",
+  f: "inside-front slice",
+  b: "inside-back slice",
+  Uu: "top face and inside-up slice together",
+  Dd: "bottom face and inside-down slice together",
+  Ll: "left face and inside-left slice together",
+  Rr: "right face and inside-right slice together",
+  Ff: "front face and inside-front slice together",
+  Bb: "back face and inside-back slice together",
 };
 
 /** Plain-English reading of a move token, e.g. "Right face, quarter turn counterclockwise". */
@@ -50,8 +73,9 @@ export const describeMove = (token: string): string => {
   return `${capitalized}, quarter turn ${prime ? "counterclockwise" : "clockwise"}.`;
 };
 
-/** Display form with a real prime mark: R' renders as R′. */
-export const displayToken = (token: string): string => token.replace("'", "\u2032");
+/** Display form with real prime marks: R'r' renders as R′r′. */
+export const displayToken = (token: string): string =>
+  token.replaceAll("'", "\u2032");
 
 export type TokenState = "done" | "current" | "upcoming";
 

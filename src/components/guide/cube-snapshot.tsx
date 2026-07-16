@@ -18,7 +18,8 @@ import {
   stateAfter,
   stickerNormals,
 } from "@/lib/cube";
-import type { Mat3, Sticker } from "@/lib/cube";
+import type { CubeSize, Mat3, Sticker } from "@/lib/cube";
+import { usePuzzleSize } from "./puzzle-size-context";
 
 const Z_AXIS = new THREE.Vector3(0, 0, 1);
 
@@ -57,10 +58,11 @@ type MiniCubie = {
 
 const buildCubies = (
   setup: string,
+  size: CubeSize,
   mask?: (sticker: Sticker) => boolean,
   spotlight?: (sticker: Sticker) => boolean,
 ): MiniCubie[] => {
-  const state = stateAfter(setup);
+  const state = stateAfter(setup, size);
   const info = new Map<string, { color: string; glow: string | null }>();
   for (const sticker of getStickers(state)) {
     const lit = mask ? mask(sticker) : true;
@@ -140,10 +142,11 @@ export const CubeSnapshot = ({
   caption,
   className,
 }: CubeSnapshotProps) => {
+  const size = usePuzzleSize();
   const { ref, inView } = useInView("200px 0px");
   const cubies = useMemo(
-    () => (inView ? buildCubies(setup, mask, spotlight) : null),
-    [inView, setup, mask, spotlight],
+    () => (inView ? buildCubies(setup, size, mask, spotlight) : null),
+    [inView, setup, size, mask, spotlight],
   );
 
   return (
@@ -162,6 +165,7 @@ export const CubeSnapshot = ({
               <directionalLight position={[6, 9, 7]} intensity={1.15} />
               <directionalLight position={[-7, -3, -6]} intensity={0.45} />
               <directionalLight position={[-4, 6, -8]} intensity={0.5} />
+              <group scale={3 / size}>
               {cubies.map((cubie) => (
                 <group
                   key={cubie.id}
@@ -188,6 +192,7 @@ export const CubeSnapshot = ({
                   ))}
                 </group>
               ))}
+              </group>
             </Canvas>
           </div>
         )}

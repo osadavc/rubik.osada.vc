@@ -1203,7 +1203,7 @@ export const beginnersMethod: Guide = {
                 eat out of your left hand.
               </p>
               <p>
-                <strong>Two yellow:</strong> hold so your left thumb rests on a
+                <strong>Two yellow:</strong>{" "}hold so your left thumb rests on a
                 yellow tile at the front left. &ldquo;I see two, my left
                 thumb&apos;s on you.&rdquo;
               </p>

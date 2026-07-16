@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useState } from "react";
+import type { CubeSize } from "@/lib/cube";
 
 const HeroCubeCanvas = dynamic(
   () => import("./hero-cube-canvas").then((mod) => mod.HeroCubeCanvas),
@@ -9,7 +10,13 @@ const HeroCubeCanvas = dynamic(
 );
 
 /** Client-only mount for the self-solving cube; sits still under reduced motion. */
-export const HeroCube = ({ className }: { className?: string }) => {
+export const HeroCube = ({
+  className,
+  size = 3,
+}: {
+  className?: string;
+  size?: CubeSize;
+}) => {
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -22,7 +29,7 @@ export const HeroCube = ({ className }: { className?: string }) => {
 
   return (
     <div className={className}>
-      <HeroCubeCanvas animate={!reducedMotion} />
+      <HeroCubeCanvas animate={!reducedMotion} size={size} />
     </div>
   );
 };

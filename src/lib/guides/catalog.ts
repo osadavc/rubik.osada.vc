@@ -30,6 +30,6 @@ export const CATALOG: CatalogEntry[] = [
     puzzle: "4x4",
     difficulty: "advanced",
     estMinutes: 90,
-    available: false,
+    available: true,
   },
 ];

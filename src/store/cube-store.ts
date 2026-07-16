@@ -9,6 +9,7 @@ import {
   parseAlg,
   parseMove,
   randomScramble,
+  sizeOfState,
 } from "@/lib/cube";
 import type { CubeState, Move, Sticker } from "@/lib/cube";
 
@@ -66,16 +67,28 @@ const VIEW_RING = ["F", "R", "B", "L"] as const;
 /**
  * Parse a token like "F" / "R'" / "U2" with its face taken from the viewer's
  * frame: "F" is always the side currently facing the viewer, however the
- * cube has been orbited. U and D stay world up and down.
+ * cube has been orbited. U and D stay world up and down. Wide and slice
+ * tokens (Rr, r, Dd...) also remap their face letters the same way.
  */
 export const viewAdjustedMove = (token: string): Move => {
+  const size = sizeOfState(useCubeStore.getState().state);
+  const remap = (letter: string): string => {
+    const idx = VIEW_RING.indexOf(letter.toUpperCase() as (typeof VIEW_RING)[number]);
+    if (idx === -1) return letter;
+    const quarter = Math.round(liveCamera.azimuth / (Math.PI / 2));
+    const mapped = VIEW_RING[(((idx + quarter) % 4) + 4) % 4];
+    return letter === letter.toLowerCase() ? mapped.toLowerCase() : mapped;
+  };
   const match = /^([UDLRFB])(2|')?$/.exec(token);
-  if (!match) return parseMove(token);
-  const idx = VIEW_RING.indexOf(match[1] as (typeof VIEW_RING)[number]);
-  if (idx === -1) return parseMove(token);
-  const quarter = Math.round(liveCamera.azimuth / (Math.PI / 2));
-  const letter = VIEW_RING[(((idx + quarter) % 4) + 4) % 4];
-  return parseMove(`${letter}${match[2] ?? ""}`);
+  if (match) return parseMove(`${remap(match[1])}${match[2] ?? ""}`, size);
+  const slice = /^([udlrfb])(2|')?$/.exec(token);
+  if (slice) return parseMove(`${remap(slice[1])}${slice[2] ?? ""}`, size);
+  const wide = /^([UDLRFB])([udlrfb])(2|')?$/.exec(token);
+  if (wide) {
+    const outer = remap(wide[1]);
+    return parseMove(`${outer}${outer.toLowerCase()}${wide[3] ?? ""}`, size);
+  }
+  return parseMove(token, size);
 };
 
 type CubeStore = {
@@ -195,7 +208,7 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
 
   loadProgram: (id, alg, opts) => {
     const { state } = get();
-    const moves = parseAlg(alg);
+    const moves = parseAlg(alg, sizeOfState(state));
     const tokens = opts?.tokens ?? alg.split(/\s+/).filter(Boolean);
     const program: Program = {
       id,
@@ -322,8 +335,9 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
   },
 
   scramble: () => {
-    const { reducedMotion } = get();
-    const moves = randomScramble(22);
+    const { reducedMotion, state } = get();
+    const size = sizeOfState(state);
+    const moves = randomScramble(size === 4 ? 30 : 22, size);
     if (reducedMotion) {
       set((prev) => ({
         state: applyMoves(prev.state, moves),
@@ -343,7 +357,7 @@ export const useCubeStore = create<CubeStore>((set, get) => ({
   },
 
   resetSolved: () => {
-    get().snapTo(createSolvedState());
+    get().snapTo(createSolvedState(sizeOfState(get().state)));
     set({ program: null });
   },
 

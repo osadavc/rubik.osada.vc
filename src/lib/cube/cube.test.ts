@@ -192,10 +192,25 @@ describe("scramble", () => {
     const moves = randomScramble(22);
     expect(moves.length).toBe(22);
     for (let i = 1; i < moves.length; i++) {
+      const prev = moves[i - 1];
+      const cur = moves[i];
       const same =
-        moves[i].axis === moves[i - 1].axis && moves[i].layer === moves[i - 1].layer;
+        cur.axis === prev.axis &&
+        cur.layers !== null &&
+        prev.layers !== null &&
+        cur.layers.length === prev.layers.length &&
+        cur.layers.every((l) => prev.layers!.includes(l));
       expect(same).toBe(false);
     }
     expect(isSolved(applyMoves(createSolvedState(), moves))).toBe(false);
+  });
+
+  test("4x4 scrambles use 4x4 layers and break the cube", () => {
+    const moves = randomScramble(30, 4);
+    expect(moves.length).toBe(30);
+    for (const move of moves) {
+      expect(move.layers!.every((l) => Math.abs(l) === 1.5 || Math.abs(l) === 0.5)).toBe(true);
+    }
+    expect(isSolved(applyMoves(createSolvedState(4), moves))).toBe(false);
   });
 });

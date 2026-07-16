@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { DIM_STICKER_COLOR, STICKER_COLORS } from "@/lib/colors";
 import { getFaces, stateAfter } from "@/lib/cube";
 import type { ColorName } from "@/lib/cube";
+import { usePuzzleSize } from "./puzzle-size-context";
 
 const CELL = 15;
 const GAP = 2;
@@ -20,26 +21,27 @@ type TopViewProps = {
 
 /**
  * PDF-style case picture: the up face from above with the neighboring faces'
- * top rows as thin strips around it.
+ * top rows as thin strips around it. Grid size follows the guide's puzzle.
  */
 export const TopView = ({
   setup,
   label,
   dimNonYellow = false,
 }: TopViewProps) => {
+  const size = usePuzzleSize();
   const { grid, strips } = useMemo(() => {
-    const faces = getFaces(stateAfter(setup));
+    const faces = getFaces(stateAfter(setup, size));
     return {
       grid: faces.U,
       strips: {
         // Order matches world x/z left-to-right and top-to-bottom.
-        top: [faces.B[0][2], faces.B[0][1], faces.B[0][0]],
-        bottom: [faces.F[0][0], faces.F[0][1], faces.F[0][2]],
-        left: [faces.L[0][0], faces.L[0][1], faces.L[0][2]],
-        right: [faces.R[0][2], faces.R[0][1], faces.R[0][0]],
+        top: [...faces.B[0]].reverse(),
+        bottom: [...faces.F[0]],
+        left: [...faces.L[0]],
+        right: [...faces.R[0]].reverse(),
       },
     };
-  }, [setup]);
+  }, [setup, size]);
 
   const fill = (color: ColorName) =>
     dimNonYellow && color !== "yellow"
@@ -47,7 +49,7 @@ export const TopView = ({
       : STICKER_COLORS[color];
 
   const gridStart = PAD + STRIP + GAP;
-  const gridSize = CELL * 3 + GAP * 2;
+  const gridSize = CELL * size + GAP * (size - 1);
   const total = gridStart * 2 + gridSize;
   const cellPos = (i: number) => gridStart + i * (CELL + GAP);
 

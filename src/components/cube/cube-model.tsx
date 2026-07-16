@@ -9,6 +9,7 @@ import {
   cubiePosition,
   faceOfNormal,
   getStickers,
+  sizeOfState,
   SOLVED_COLORS,
   stickerNormals,
 } from "@/lib/cube";
@@ -53,7 +54,9 @@ type CubeModelProps = {
 };
 
 export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) => {
-  const initial = useMemo(() => createSolvedState(), []);
+  // Rebuild the cubie meshes whenever the staged puzzle changes size.
+  const puzzleSize = useCubeStore((s) => sizeOfState(s.state));
+  const initial = useMemo(() => createSolvedState(puzzleSize), [puzzleSize]);
   const groups = useRef(new Map<number, THREE.Group>());
   const materials = useRef(new Map<string, THREE.MeshStandardMaterial>());
   const targetColors = useRef(new Map<string, THREE.Color>());
@@ -142,7 +145,7 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
       const quat = matrixToQuaternion(cubie.rotation);
       const affected =
         animMove !== null &&
-        (animMove.layer === null || pos[animMove.axis] === animMove.layer);
+        (animMove.layers === null || animMove.layers.includes(pos[animMove.axis]));
       const vec = new THREE.Vector3(
         pos[0] * CUBIE_SPACING,
         pos[1] * CUBIE_SPACING,
@@ -255,12 +258,12 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
       const state = useCubeStore.getState().state;
       const cubie = state.find((c) => c.id === g.cubieId);
       if (!cubie) return;
-      const layer = cubiePosition(cubie)[axis] as -1 | 0 | 1;
+      const layer = cubiePosition(cubie)[axis];
 
       // Pick the turn direction that moves the grabbed point along the drag.
       const velocity = AXIS_VECTORS[axis].clone().cross(g.point);
       const q = velocity.dot(best.tangent) > 0 ? 1 : -1;
-      useCubeStore.getState().userMove({ axis, layer, q });
+      useCubeStore.getState().userMove({ axis, layers: [layer], q });
     };
 
     const onUp = (event: PointerEvent) => {
@@ -279,6 +282,8 @@ export const CubeModel = ({ interactive, setControlsEnabled }: CubeModelProps) =
 
   return (
     <group
+      // Uniform scale keeps the bigger cube inside the same camera framing.
+      scale={3 / puzzleSize}
       onPointerDown={(event) => {
         if (!interactive) return;
         const store = useCubeStore.getState();

@@ -12,6 +12,7 @@ import { algTokens, stateAfter } from "@/lib/cube";
 import type { PracticeDrill } from "@/lib/guides/types";
 import { useCubeStore } from "@/store/cube-store";
 import { CubeSnapshot } from "./cube-snapshot";
+import { usePuzzleSize } from "./puzzle-size-context";
 import { useStepContext } from "./step-context";
 import { TokenStrip } from "./walkthrough";
 
@@ -25,6 +26,7 @@ const ghostButton =
  */
 export const PracticePanel = () => {
   const { step, setupState } = useStepContext();
+  const size = usePuzzleSize();
   const practice = useCubeStore((s) => s.practice);
   const program = useCubeStore((s) => s.program);
   const [showHint, setShowHint] = useState(false);
@@ -45,7 +47,9 @@ export const PracticePanel = () => {
   const beginDrill = (index: number) => {
     const store = useCubeStore.getState();
     const target = drills[index];
-    store.snapTo(index === 0 && !step.drills ? setupState : stateAfter(target.setup));
+    store.snapTo(
+      index === 0 && !step.drills ? setupState : stateAfter(target.setup, size),
+    );
     store.clearProgram();
     store.setHighlight(step.highlight ?? null);
     store.setSpotlight(null);
@@ -241,7 +245,7 @@ export const PracticePanel = () => {
                   type="button"
                   onClick={() => {
                     const store = useCubeStore.getState();
-                    store.snapTo(stateAfter(drill.setup));
+                    store.snapTo(stateAfter(drill.setup, size));
                     store.markPracticeAssisted();
                     store.loadProgram(solutionProgramId, drill.solution!, {
                       autoplay: true,

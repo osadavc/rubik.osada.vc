@@ -47,7 +47,10 @@ export default function Home() {
                 </p>
                 <GuideCta slug={entry.slug} />
               </div>
-              <HeroCube className="pointer-events-none absolute -bottom-24 -right-24 size-96 sm:-right-32 sm:bottom-auto sm:top-1/2 sm:h-112 sm:w-md sm:-translate-y-1/2" />
+              <HeroCube
+                size={entry.puzzle === "4x4" ? 4 : 3}
+                className="pointer-events-none absolute -bottom-24 -right-24 size-96 sm:-right-32 sm:bottom-auto sm:top-1/2 sm:h-112 sm:w-md sm:-translate-y-1/2"
+              />
             </div>
           ))}
 

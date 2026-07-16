@@ -1,10 +1,15 @@
 "use client";
 
-import { CaretLeftIcon, XIcon } from "@phosphor-icons/react";
+import {
+  CaretLeftIcon,
+  CaretRightIcon,
+  GraduationCapIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import Link from "next/link";
 import { useEffect, useMemo, useRef } from "react";
 import { CubeViewport } from "@/components/cube/cube-viewport";
-import { algTokens, stateAfter } from "@/lib/cube";
+import { algTokens, createSolvedState, sizeOfState, stateAfter } from "@/lib/cube";
 import type { Guide } from "@/lib/guides/types";
 import { guideSteps } from "@/lib/guides/types";
 import { useCubeStore } from "@/store/cube-store";
@@ -12,6 +17,7 @@ import { ChapterRail, ContentsList } from "./chapter-nav";
 import { CubeSnapshot } from "./cube-snapshot";
 import { IntroDialog } from "./intro-dialog";
 import { KeyboardHint, LockNudge, useKeyboardTurns } from "./keyboard-turns";
+import { PuzzleSizeContext } from "./puzzle-size-context";
 import { StepBlock } from "./step-block";
 import { useActiveStep } from "./use-active-step";
 
@@ -60,11 +66,12 @@ const PracticeHud = () => {
 };
 
 export const GuideView = ({ guide }: { guide: Guide }) => {
+  const size = guide.puzzle === "4x4" ? 4 : 3;
   const steps = useMemo(() => guideSteps(guide), [guide]);
   const stepIds = useMemo(() => steps.map((s) => s.id), [steps]);
   const setupStates = useMemo(
-    () => new Map(steps.map((step) => [step.id, stateAfter(step.setup ?? "")])),
-    [steps]
+    () => new Map(steps.map((step) => [step.id, stateAfter(step.setup ?? "", size)])),
+    [steps, size]
   );
   // What the cube shows when a step scrolls into view. Practice steps preview
   // the finished segment until "Start practicing" swaps in the scramble.
@@ -74,18 +81,24 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
         steps.map((step) => {
           const drill = step.drills?.[0];
           if (step.interaction === "execute" && drill?.solution) {
-            return [step.id, stateAfter(`${drill.setup} ${drill.solution}`)];
+            return [step.id, stateAfter(`${drill.setup} ${drill.solution}`, size)];
           }
-          return [step.id, stateAfter(step.setup ?? "")];
+          return [step.id, stateAfter(step.setup ?? "", size)];
         })
       ),
-    [steps]
+    [steps, size]
   );
   const { activeId, registerStep } = useActiveStep(stepIds);
   const practicing = useCubeStore((s) => s.practice !== null);
   useKeyboardTurns();
 
   const activationTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Put a cube of the right size on stage before the first step activates.
+  useEffect(() => {
+    const store = useCubeStore.getState();
+    if (sizeOfState(store.state) !== size) store.snapTo(createSolvedState(size));
+  }, [size]);
 
   // Drop any legacy step hash from the URL without restoring scroll position.
   useEffect(() => {
@@ -150,6 +163,7 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
     : "";
 
   return (
+    <PuzzleSizeContext.Provider value={size}>
     <div className="min-h-dvh">
       <IntroDialog />
       <header className="sticky top-0 z-40 border-b border-zinc-200/80 bg-[var(--background)]/85 backdrop-blur-md">
@@ -238,6 +252,32 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
               <p className="mt-3 max-w-md text-[15px] leading-relaxed text-zinc-500">
                 {guide.tagline}
               </p>
+              {guide.prerequisite && (
+                <Link
+                  href={`/guides/${guide.prerequisite.slug}`}
+                  className="group mt-7 flex items-start gap-3.5 rounded-xl border border-zinc-200 bg-zinc-50 p-4 transition-colors duration-150 hover:border-zinc-300"
+                >
+                  <GraduationCapIcon
+                    size={17}
+                    weight="fill"
+                    className="mt-0.5 shrink-0 text-amber-500"
+                  />
+                  <span className="text-sm leading-relaxed text-zinc-600">
+                    <span className="font-semibold text-zinc-900">
+                      {guide.prerequisite.title}
+                    </span>{" "}
+                    {guide.prerequisite.body}{" "}
+                    <span className="inline-flex items-center gap-1 whitespace-nowrap font-medium text-zinc-900">
+                      {guide.prerequisite.linkLabel}
+                      <CaretRightIcon
+                        size={11}
+                        weight="bold"
+                        className="transition-transform duration-200 ease-out group-hover:translate-x-0.5"
+                      />
+                    </span>
+                  </span>
+                </Link>
+              )}
               <ContentsList chapters={guide.chapters} />
             </header>
 
@@ -314,5 +354,6 @@ export const GuideView = ({ guide }: { guide: Guide }) => {
         </div>
       </div>
     </div>
+    </PuzzleSizeContext.Provider>
   );
 };

@@ -4,6 +4,7 @@ import {
   getStickers,
   pieceColors,
   pieceTypeOf,
+  stickerNormals,
 } from "./facelets";
 import { mulMatVec } from "./math";
 import { cubiePosition } from "./state";
@@ -62,11 +63,7 @@ export const findPiece = (state: CubeState, colors: readonly ColorName[]): Cubie
 /** The face a specific colored sticker of `cubie` currently faces. */
 export const stickerFace = (state: CubeState, cubie: Cubie, color: ColorName): FaceName => {
   const colors = pieceColors(cubie);
-  const normals = [
-    cubie.origin[0] !== 0 ? ([cubie.origin[0], 0, 0] as const) : null,
-    cubie.origin[1] !== 0 ? ([0, cubie.origin[1], 0] as const) : null,
-    cubie.origin[2] !== 0 ? ([0, 0, cubie.origin[2]] as const) : null,
-  ].filter((n) => n !== null);
+  const normals = stickerNormals(cubie);
   for (let i = 0; i < normals.length; i++) {
     if (colors[i] !== color) continue;
     return faceOfNormal(mulMatVec(cubie.rotation, normals[i]));

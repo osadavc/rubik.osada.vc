@@ -68,6 +68,13 @@ export type Guide = {
   puzzle: "3x3" | "4x4";
   difficulty: "beginner" | "intermediate" | "advanced";
   estMinutes: number;
+  /** Banner in the guide lede pointing at the guide this one builds on. */
+  prerequisite?: {
+    title: string;
+    body: string;
+    linkLabel: string;
+    slug: string;
+  };
   chapters: GuideChapter[];
 };
 

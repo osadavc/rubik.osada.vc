@@ -5,6 +5,9 @@ export type Vec3 = readonly [number, number, number];
 /** Row-major 3x3 integer rotation matrix. */
 export type Mat3 = readonly [Vec3, Vec3, Vec3];
 
+/** Supported puzzle sizes: the classic cube and the Rubik's Master. */
+export type CubeSize = 3 | 4;
+
 export type FaceName = "U" | "D" | "L" | "R" | "F" | "B";
 
 export type ColorName =
@@ -29,12 +32,14 @@ export type Cubie = {
 export type CubeState = readonly Cubie[];
 
 /**
- * A layer rotation. `layer === null` rotates the whole cube.
+ * A layer rotation. `layers` holds the coordinate values of the layers to
+ * turn along `axis` (e.g. [1] for a 3x3 R, [0.5, 1.5] for a 4x4 Rr);
+ * `layers === null` rotates the whole cube.
  * `q` counts quarter turns using the right-hand rule about the +axis.
  */
 export type Move = {
   readonly axis: Axis;
-  readonly layer: -1 | 0 | 1 | null;
+  readonly layers: readonly number[] | null;
   readonly q: 1 | 2 | -1;
 };
 
@@ -42,7 +47,7 @@ export type Move = {
 export type Sticker = {
   /** Face the sticker currently sits on. */
   readonly face: FaceName;
-  /** 0..2 grid coordinates within the face. */
+  /** 0..size-1 grid coordinates within the face. */
   readonly row: number;
   readonly col: number;
   readonly color: ColorName;
